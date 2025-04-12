@@ -1,6 +1,6 @@
 # Nx Firebase Monorepo Example
 
-A minimal example of using [Nx](https://nx.dev) to manage a monorepo that integrates [Firebase Functions](https://firebase.google.com/docs/functions), [Firestore](https://firebase.google.com/docs/firestore), and [Angular](https://angular.io) for full-stack development.
+A minimal example of using [Nx](https://nx.dev) to manage a monorepo that integrates [Firebase Functions](https://firebase.google.com/docs/functions), [Firestore](https://firebase.google.com/docs/firestore), and [Angular](https://angular.dev) for full-stack development.
 
 ## What’s Inside
 
@@ -33,28 +33,37 @@ tools/
 
 ### Setup
 
-git clone https://github.com/your-username/nx-firebase-monorepo-example.git
+```bash
+git clone https://github.com/johannesnormannjensen/nx-firebase-monorepo-example.git
 cd nx-firebase-monorepo-example
 npm install
+```
 
 ### Development
 
 Serve Angular frontend:
-
+```bash
 nx serve frontend
+```
 
 Serve Firebase Functions locally:
 
+```bash
 nx serve functions
+```
 
 Deploy to Firebase:
 
+```bash
 nx deploy functions
 nx deploy frontend
+```
 
 Or using the Firebase CLI directly:
 
+```bash
 firebase deploy
+```
 
 ## Devcontainer Support
 
@@ -67,13 +76,21 @@ To use:
 
 ## Testing
 
+Run unit tests for Angular and Firebase Functions:
+
+```bash
 nx test frontend
 nx test functions
+```
 
 ## Build
 
+Build the Angular frontend and Firebase Functions:
+
+```bash
 nx build frontend
 nx build functions
+```
 
 ---
 
