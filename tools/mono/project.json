@@ -1,0 +1,41 @@
+{
+  "name": "mono",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/mono/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tools/mono",
+        "main": "tools/mono/src/index.ts",
+        "tsConfig": "tools/mono/tsconfig.lib.json",
+        "assets": [
+          "tools/mono/*.md",
+          {
+            "input": "./tools/mono/src",
+            "glob": "**/!(*.ts)",
+            "output": "./src"
+          },
+          {
+            "input": "./tools/mono/src",
+            "glob": "**/*.d.ts",
+            "output": "./src"
+          },
+          {
+            "input": "./tools/mono",
+            "glob": "generators.json",
+            "output": "."
+          },
+          {
+            "input": "./tools/mono",
+            "glob": "executors.json",
+            "output": "."
+          }
+        ]
+      }
+    }
+  }
+}

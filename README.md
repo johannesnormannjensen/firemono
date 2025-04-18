@@ -94,5 +94,14 @@ nx build functions
 
 ---
 
+### Generators
+
+This workspace includes a custom Nx generator to scaffold additional Firebase projects in a monorepo.
+To add a new Firebase project with default configuration, run:
+```bash
+nx generate workspace-generator firebase-project --name <project-name> [--directory <directory>] [--tags tag1,tag2]
+```
+This will create `apps/<directory>/<project-name>/firebase` (or `apps/<project-name>/firebase` by default) containing `firebase.json`, security rules, emulator settings, and an Nx project configuration with typical targets (`build`, `serve`, `emulate`, `deploy`, etc.).
+
 Feel free to fork, clone, or contribute to this repo!
 

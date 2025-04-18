@@ -1,4 +1,4 @@
-import baseConfig from '../../../eslint.config.mjs';
+import baseConfig from '../../eslint.config.mjs';
 
 export default [
   ...baseConfig,
@@ -10,11 +10,19 @@ export default [
         {
           ignoredFiles: [
             '{projectRoot}/eslint.config.{js,cjs,mjs}',
-            '{projectRoot}/esbuild.config.{js,ts,mjs,mts}',
             '{projectRoot}/vite.config.{js,ts,mjs,mts}',
           ],
         },
       ],
+    },
+    languageOptions: {
+      parser: await import('jsonc-eslint-parser'),
+    },
+  },
+  {
+    files: ['**/package.json'],
+    rules: {
+      '@nx/nx-plugin-checks': 'error',
     },
     languageOptions: {
       parser: await import('jsonc-eslint-parser'),

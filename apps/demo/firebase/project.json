@@ -2,8 +2,8 @@
   "name": "demo-firebase",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "tags": ["demo-firebase", "demo-firebase:app"],
-  "implicitDependencies": ["functions"],
+  "tags": ["project:demo", "demo-firebase"],
+  "implicitDependencies": ["demo-functions"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",

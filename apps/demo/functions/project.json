@@ -1,0 +1,46 @@
+{
+  "name": "demo-functions",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/demo/functions/src",
+  "projectType": "application",
+  "tags": ["project:demo", "demo-functions"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/demo/functions",
+        "main": "apps/demo/functions/src/main.ts",
+        "tsConfig": "apps/demo/functions/tsconfig.app.json",
+        "assets": ["apps/demo/functions/src/assets"],
+        "generatePackageJson": true,
+        "platform": "node",
+        "bundle": true,
+        "thirdParty": false,
+        "dependenciesFieldType": "dependencies",
+        "target": "node16",
+        "format": ["cjs"],
+        "esbuildOptions": {
+          "logLevel": "info"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/demo/functions/jest.config.ts"
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run firebase:deploy --only functions:functions"
+      },
+      "dependsOn": ["build"]
+    }
+  }
+}

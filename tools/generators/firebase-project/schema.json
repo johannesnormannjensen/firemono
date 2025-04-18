@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "cli": "nx",
+  "id": "firebase-project",
+  "title": "Add Firebase Project",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Firebase project",
+      "x-prompt": "What name would you like to use for your Firebase project?"
+    },
+    "directory": {
+      "type": "string",
+      "description": "An optional directory to place the project under (apps/<directory>)",
+      "x-prompt": "In which directory should the project be nested (apps/<directory>)?",
+      "default": ""
+    },
+    "tags": {
+      "type": "string",
+      "description": "Comma-separated tags to apply to the project",
+      "default": ""
+    }
+  },
+  "required": ["name"]
+}
