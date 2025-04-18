@@ -1,7 +1,7 @@
 {
-  "name": "mono",
+  "name": "firemono-plugin",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tools/mono/src",
+  "sourceRoot": "tools/plugin/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -9,32 +9,39 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/tools/mono",
-        "main": "tools/mono/src/index.ts",
-        "tsConfig": "tools/mono/tsconfig.lib.json",
+        "outputPath": "dist/tools/plugin",
+        "main": "tools/plugin/src/index.ts",
+        "tsConfig": "tools/plugin/tsconfig.lib.json",
         "assets": [
-          "tools/mono/*.md",
+          "tools/plugin/*.md",
           {
-            "input": "./tools/mono/src",
+            "input": "./tools/plugin/src",
             "glob": "**/!(*.ts)",
             "output": "./src"
           },
           {
-            "input": "./tools/mono/src",
+            "input": "./tools/plugin/src",
             "glob": "**/*.d.ts",
             "output": "./src"
           },
           {
-            "input": "./tools/mono",
+            "input": "./tools/plugin",
             "glob": "generators.json",
             "output": "."
           },
           {
-            "input": "./tools/mono",
+            "input": "./tools/plugin",
             "glob": "executors.json",
             "output": "."
           }
         ]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/tools/plugin"
       }
     }
   }

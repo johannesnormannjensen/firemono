@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@normannjensen/mono": ["tools/mono/src/index.ts"]
+      "@firemono/plugin": ["tools/plugin/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

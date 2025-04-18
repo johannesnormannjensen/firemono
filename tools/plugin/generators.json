@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "firebase-project": {
+      "factory": "./src/generators/firebase-project/firebase-project",
+      "schema": "./src/generators/firebase-project/schema.json",
+      "description": "firebase-project generator"
+    }
+  }
+}

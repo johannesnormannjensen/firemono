@@ -73,6 +73,9 @@ export default async function (tree: Tree, schema: Schema) {
     projectDir,
     tmpl: ''
   };
+  console.log('🛠 Generating files from:', join(__dirname, 'files'));
+  // list files to be generated
+  console.log('Files to be generated:', tree.children(join(__dirname, '..', '..', '..', '..', '..', '..')));
   generateFiles(tree, join(__dirname, 'files'), projectRoot, templateOptions);
 
   await formatFiles(tree);
