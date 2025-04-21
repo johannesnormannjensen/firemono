@@ -3,19 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "lint:all": "npx -y nx run-many --all --target=lint",
-    "build:demo": "npx -y run-many --all --target=build --projects=tag:app:demo",
-    "e2e:ui": "firebase emulators:exec --only=functions,firestore,auth --import=./exports 'npx nx e2e ui -- --project chromium'",
-    "e2e-ci:ui": "firebase emulators:exec --only=functions,firestore,auth --import=./exports 'npx nx e2e ui --skip-nx-cache -- --project chromium'",
-    "test:ui": "npx nx run-many --all --t test --projects ui-\\* ui --exclude data",
-    "test-ci:ui": "npx nx run-many --all --t test --projects ui-\\* ui --exclude data --reporters @matteoh2o1999/github-actions-jest-reporter",
-    "test:firebase": "firebase emulators:exec --only=firestore --import=./exports 'npx nx run-many -t test --projects firebase-\\* functions --exclude data'",
-    "test-ci:firebase": "firebase emulators:exec --only=firestore --import=./exports 'npx nx run-many -t test --projects firebase-\\* functions --exclude data --reporters @matteoh2o1999/github-actions-jest-reporter'",
-    "deploy:hosting": "firebase deploy --only hosting",
-    "deploy:functions": "firebase deploy --only functions",
-    "deploy:firestore": "firebase deploy --only firestore:rules",
-    "storybook:ui": "npx -y nx storybook ui",
-    "translate": "npx nx run ui:translate"
+    "lint:all": "npx -y nx run-many --all --target=lint"
   },
   "private": true,
   "dependencies": {
