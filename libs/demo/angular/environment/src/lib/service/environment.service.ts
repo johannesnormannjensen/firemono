@@ -1,4 +1,4 @@
-import { Environment } from "../model/environment.model";
+import { Environment } from '../model/environment.model';
 
 export class EnvironmentService {
 
@@ -16,7 +16,7 @@ export class EnvironmentService {
         return this.#environment.apiUrl;
     }
 
-    get isProduction(): boolean {
-        return this.#environment.production;
+    get environmentType() {
+        return this.#environment.type;
     }
 }

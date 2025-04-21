@@ -1,6 +1,6 @@
-import { Environment } from "./model/environment.model";
+import { Environment } from './model/environment.model';
 
 export const environment: Environment = {
-    production: false,
-    apiUrl: "https://development-api.example.com",
+    type: 'development',
+    apiUrl: 'https://development-api.example.com',
 }

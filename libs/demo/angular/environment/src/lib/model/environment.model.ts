@@ -1,4 +1,4 @@
 export type Environment = {
-    production: boolean;
+    type: 'production' | 'development' | 'emulator';
     apiUrl: string;
 };
