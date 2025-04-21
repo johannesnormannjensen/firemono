@@ -4,13 +4,13 @@
   "sourceRoot": "apps/demo/functions/src",
   "projectType": "application",
   
-  "tags": ["app:demo", "scope:demo-firebase"],
+  "tags": ["app:demo", "scope:demo-firebase", "group:demo-functions"],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/demo/functions",
+        "outputPath": "apps/demo/firebase/functions",
         "main": "apps/demo/functions/src/index.ts",
         "tsConfig": "apps/demo/functions/tsconfig.app.json",
         "assets": ["apps/demo/functions/src/assets"],

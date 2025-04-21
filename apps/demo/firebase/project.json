@@ -21,10 +21,15 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "executor": "nx:run-commands",
       "options": {
-        "reportsDirectory": "../../coverage/apps/demo/functions"
+        "command": "nx run-many --target=test --projects=tag:group:demo-functions"
+      }
+    },
+    "test-watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx watch --projects=tag:group:demo-functions -- nx run-many --target=test --projects=tag:group:demo-functions"
       }
     },
     "firebase": {

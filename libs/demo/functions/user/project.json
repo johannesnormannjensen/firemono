@@ -1,0 +1,28 @@
+{
+  "name": "demo-functions-user",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/demo/functions/user/src",
+  "projectType": "library",
+  "tags": ["group:demo-functions"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/demo/functions/user",
+        "main": "libs/demo/functions/user/src/index.ts",
+        "tsConfig": "libs/demo/functions/user/tsconfig.lib.json",
+        "assets": ["libs/demo/functions/user/*.md"],
+        "format": ["cjs"],
+        "generatePackageJson": true
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../../../coverage/demo/functions/user"
+      }
+    }
+  }
+}

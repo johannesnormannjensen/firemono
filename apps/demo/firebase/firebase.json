@@ -1,16 +1,16 @@
 {
   "projectDir": "apps/demo/firebase",
   "database": {
-    "rules": "database.rules.json"
+    "rules": "./database.rules.json"
   },
   "firestore": {
-    "rules": "apps/demo/firebase/firestore.rules",
-    "indexes": "apps/demo/firebase/firestore.indexes.json"
+    "rules": "./firestore.rules",
+    "indexes": "./firestore.indexes.json"
   },
   "hosting": {
     "site": "demo-angular",
     "predeploy": "npx nx build demo-angular",
-    "public": "dist/apps/demo/angular",
+    "public": "./public",
     "rewrites": [
       {
         "source": "**",
@@ -19,13 +19,13 @@
     ]
   },
   "storage": {
-    "rules": "apps/demo/firebase/storage.rules"
+    "rules": "./storage.rules"
   },
   "functions": [
     {
       "predeploy": "npx nx build demo-functions",
       "codebase": "demo-functions",
-      "source": "dist/apps/demo/functions"
+      "source": "./functions"
     }
   ],
   "emulators": {

@@ -4,7 +4,7 @@ import { connectAuthEmulator, getAuth } from '@angular/fire/auth';
 import { connectFirestoreEmulator, getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { connectFunctionsEmulator, getFunctions, provideFunctions } from '@angular/fire/functions';
 import { provideRouter } from '@angular/router';
-import { EnvironmentService } from '@firemono/demo-angular-environment';
+import { EnvironmentService } from '@firemono/demo/angular/environment';
 import { environment } from '../environment/environment';
 import { firebaseConfig } from '../firebase/firebase-config';
 import { appRoutes } from './app.routes';

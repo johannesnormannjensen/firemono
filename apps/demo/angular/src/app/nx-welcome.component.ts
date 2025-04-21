@@ -1,6 +1,6 @@
 import { CommonModule, JsonPipe } from '@angular/common';
 import { Component, inject, ViewEncapsulation } from '@angular/core';
-import { EnvironmentService } from '@firemono/demo-angular-environment';
+import { EnvironmentService } from '@firemono/demo/angular/environment';
 import { Firestore, collectionData, collection } from '@angular/fire/firestore';
 
 @Component({
