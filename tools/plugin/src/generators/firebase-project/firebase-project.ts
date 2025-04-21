@@ -71,7 +71,8 @@ export default async function (tree: Tree, schema: Schema) {
   const templateOptions = {
     ...nameParts,
     projectDir,
-    tmpl: ''
+    tags: parsedTags,
+    tmpl: '',
   };
   console.log('🛠 Generating files from:', join(__dirname, 'files'));
   // list files to be generated

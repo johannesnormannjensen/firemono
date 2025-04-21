@@ -12,7 +12,6 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "nxCloudId": "67fa18f749aafd7ecf89f7bf",
   "targetDefaults": {
     "@angular-devkit/build-angular:application": {
       "cache": true,
@@ -37,6 +36,11 @@
     },
     "@nx/esbuild:esbuild": {
       "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "nx:run-commands": {
+      "cache": false,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },

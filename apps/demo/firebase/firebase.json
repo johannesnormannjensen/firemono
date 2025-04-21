@@ -4,14 +4,13 @@
     "rules": "database.rules.json"
   },
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "apps/demo/firebase/firestore.rules",
+    "indexes": "apps/demo/firebase/firestore.indexes.json"
   },
   "hosting": {
-    // "site": "your-project-name",
-    // "predeploy": "npx nx build web-app",
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "site": "demo-angular",
+    "predeploy": "npx nx build demo-angular",
+    "public": "dist/apps/demo/angular",
     "rewrites": [
       {
         "source": "**",
@@ -20,13 +19,13 @@
     ]
   },
   "storage": {
-    "rules": "apps/firebase/storage.rules"
+    "rules": "apps/demo/firebase/storage.rules"
   },
   "functions": [
     {
-      "predeploy": "npx nx build firebase",
-      "codebase": "functions",
-      "source": "dist/apps/functions"
+      "predeploy": "npx nx build demo-functions",
+      "codebase": "demo-functions",
+      "source": "dist/apps/demo/functions"
     }
   ],
   "emulators": {
