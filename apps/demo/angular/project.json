@@ -1,0 +1,108 @@
+{
+  "name": "demo-angular",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "demo",
+  "sourceRoot": "apps/demo/angular/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/demo/angular",
+        "index": "apps/demo/angular/src/index.html",
+        "browser": "apps/demo/angular/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/demo/angular/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/demo/angular/public"
+          }
+        ],
+        "styles": ["apps/demo/angular/src/styles.css"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/demo/angular/src/environment/environment.ts",
+              "with": "libs/demo/angular/environment/src/lib/environment.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/demo/angular/src/environment/environment.ts",
+              "with": "libs/demo/angular/environment/src/lib/environment.development.ts"
+            }
+          ]
+        },
+        "emulator": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/demo/angular/src/environment/environment.ts",
+              "with": "libs/demo/angular/environment/src/lib/environment.emulator.ts"
+            }
+          ]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "demo-angular:build:production"
+        },
+        "emulator": {
+          "buildTarget": "demo-angular:build:emulator"
+        },
+        "development": {
+          "buildTarget": "demo-angular:build:development"
+        }
+      },
+      "defaultConfiguration": "emulator"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "demo-angular:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "serve-static": {
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "demo-angular:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/demo/angular/browser",
+        "spa": true
+      }
+    }
+  }
+}

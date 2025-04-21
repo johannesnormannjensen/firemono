@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@firemono/demo-angular-environment": ["libs/demo/angular/environment/src/index.ts"],
       "@firemono/plugin": ["tools/plugin/src/index.ts"]
     }
   },
