@@ -9,7 +9,7 @@
   },
   "hosting": {
     "site": "demo-angular",
-    "predeploy": "npx nx build demo-angular",
+    "predeploy": "npx -y nx build demo-angular",
     "public": "./public",
     "rewrites": [
       {
@@ -23,7 +23,7 @@
   },
   "functions": [
     {
-      "predeploy": "npx nx build demo-functions",
+      "predeploy": "npx -y nx build demo-functions",
       "codebase": "demo-functions",
       "source": "./functions"
     }
