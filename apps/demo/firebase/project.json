@@ -2,19 +2,20 @@
   "name": "demo-firebase",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "tags": ["app:demo", "scope:demo-firebase"],
-  "implicitDependencies": ["demo-functions"],
+  "tags": [
+    "type:firebase",
+    "scope:demo",
+    "platform:firebase",
+    "feature:functions",
+    "feature:firestore",
+    "feature:hosting",
+    "feature:emulators"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "echo Build succeeded."
-      }
-    },
-    "watch": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "nx watch --projects=demo-firebase,demo-functions -- nx build demo-firebase"
+        "command": "nx build demo-functions"
       }
     },
     "lint": {
@@ -23,13 +24,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "nx run-many --target=test --projects=tag:group:demo-functions"
-      }
-    },
-    "test-watch": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "nx watch --projects=tag:group:demo-functions -- nx run-many --target=test --projects=tag:group:demo-functions"
+        "command": "nx run-many --target=test --projects=tag:scope:demo"
       }
     },
     "firebase": {
@@ -43,34 +38,27 @@
     "killports": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx -y kill-port --port 9099,5001,8080,9000,5000,8085,9199,9299,4000,4400,4500"
+        "command": "npx -y kill-port --port 5001,8080,5000,9099"
       }
     },
     "emulators:start": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "firebase emulators:start --only=functions,firestore,auth --import=./exports"
+        "command": "mkdir -p exports && if [ -d \"exports\" ] && [ \"$(ls -A exports)\" ]; then firebase emulators:start --only=functions,firestore,hosting,auth --import=./exports; else firebase emulators:start --only=functions,firestore,hosting,auth; fi"
       }
     },
     "emulators:debug": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "firebase emulators:start --inspect-functions --only=functions,firestore,auth --import=./exports"
+        "command": "mkdir -p exports && if [ -d \"exports\" ] && [ \"$(ls -A exports)\" ]; then firebase emulators:start --inspect-functions --only=functions,firestore,hosting,auth --import=./exports; else firebase emulators:start --inspect-functions --only=functions,firestore,hosting,auth; fi"
       }
     },
     "emulators:stop": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx -y kill-port --port 9099,5001,8080,9000,5000,8085,9199,9299,4000,4400,4500"
-      }
-    },
-    "emulators:export": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "apps/demo/firebase",
-        "command": "firebase emulators:export ./exports --force && bash ../../../tools/scripts/format-export.sh"
+        "command": "npx -y kill-port --port 5001,8080,5000,9099"
       }
     },
     "getconfig": {
@@ -92,9 +80,47 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "firebase deploy --only functions:functions"
+        "command": "firebase deploy --only functions"
       },
       "dependsOn": ["build"]
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx build demo-functions --watch",
+          "cd apps/demo/firebase && mkdir -p exports && firebase emulators:start --only=functions,firestore,hosting,auth"
+        ],
+        "parallel": true
+      }
+    },
+    "data:export": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/demo/firebase",
+        "command": "firebase emulators:export ./exports --force"
+      }
+    },
+    "data:import": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/demo/firebase",
+        "command": "firebase emulators:start --import=./exports --export-on-exit=./exports"
+      }
+    },
+    "data:seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/demo/firebase",
+        "command": "echo \"Add your data seeding script here\""
+      }
+    },
+    "logs": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/demo/firebase",
+        "command": "firebase functions:log"
+      }
     }
   }
 }

@@ -3,14 +3,13 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/demo/functions/src",
   "projectType": "application",
-  
   "tags": ["app:demo", "scope:demo-firebase", "group:demo-functions"],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "apps/demo/firebase/functions",
+        "outputPath": "dist/demo/functions",
         "main": "apps/demo/functions/src/index.ts",
         "tsConfig": "apps/demo/functions/tsconfig.app.json",
         "assets": ["apps/demo/functions/src/assets"],
@@ -19,7 +18,7 @@
         "bundle": true,
         "thirdParty": false,
         "dependenciesFieldType": "dependencies",
-        "target": "node16",
+        "target": "node22",
         "format": ["cjs"],
         "esbuildOptions": {
           "logLevel": "info"
