@@ -19,10 +19,10 @@
     },
     "directory": {
       "type": "string", 
-      "description": "Directory where the project should be created. Creates <directory>/<name>/ (defaults to 'apps')",
+      "description": "Full path where the project should be created (e.g., 'apps/my-app')",
       "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-/]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$",
       "x-prompt": {
-        "message": "In which directory should the project be created?",
+        "message": "What is the full path where the project should be created?",
         "type": "input"
       },
       "default": "apps"

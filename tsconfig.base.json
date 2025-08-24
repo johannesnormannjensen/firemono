@@ -15,11 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@firemono/nx": ["tools/plugin/src/index.ts"],
       "@firemono/demo-functions-user": ["libs/demo/functions/user/src/index.ts"],
       "@firemono/demo/angular/environment": ["libs/demo/angular/environment/src/index.ts"],
       "@firemono/demo/data": ["libs/demo/data/src/index.ts"],
       "@firemono/demo/functions/user": ["libs/demo/functions/user/src/index.ts"],
-      "@firemono/app": ["tools/plugin/src/index.ts"],
       "@firemono/plugin": ["tools/plugin/src/index.ts"]
     }
   },

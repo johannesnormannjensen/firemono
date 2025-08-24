@@ -40,7 +40,7 @@ describe('Firebase Generator', () => {
   it('should integrate Firebase project and generate proper configuration', async () => {
     await generator(tree, {
       name: 'my-app',
-      directory: 'apps',
+      directory: 'apps/my-app',
       initDirectory: tempInitDir
     });
   
@@ -96,7 +96,7 @@ describe('Firebase Generator', () => {
   it('should work with custom directory', async () => {
     await generator(tree, {
       name: 'custom-app',
-      directory: 'libs',
+      directory: 'libs/custom-app',
       initDirectory: tempInitDir
     });
 
