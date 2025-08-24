@@ -1,5 +1,5 @@
 {
-  "name": "firemono-nx-plugin",
+  "name": "firemono-nx",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "tools/nx/src",
   "projectType": "library",
