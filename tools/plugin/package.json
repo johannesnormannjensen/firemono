@@ -1,13 +1,34 @@
 {
-  "name": "@firemono/plugin",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@firemono/nx-firebase-plugin",
+  "version": "1.0.0",
+  "description": "Nx plugin for managing multiple Firebase projects in a monorepo",
+  "author": "Johannes Firemono",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johannesfiremono/nx-firebase-monorepo-example.git",
+    "directory": "tools/plugin"
+  },
+  "keywords": [
+    "nx",
+    "firebase",
+    "monorepo",
+    "plugin",
+    "generator",
+    "angular",
+    "functions"
+  ],
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
+  "peerDependencies": {
+    "@nx/devkit": ">=20.0.0"
+  },
   "dependencies": {
-    "@nx/devkit": "20.7.2",
     "tslib": "^2.3.0"
   },
-  "generators": "./generators.json"
+  "generators": "./generators.json",
+  "nx": {
+    "name": "firemono"
+  }
 }

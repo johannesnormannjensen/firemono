@@ -78,18 +78,33 @@ nx e2e demo-angular-e2e
 nx test-watch demo-firebase
 ```
 
-## Custom Nx Generator
+## Custom Nx Plugin (@firemono/nx-firebase-plugin)
 
-This workspace includes a custom generator for creating new Firebase projects:
+This workspace includes a custom Nx plugin for creating Firebase projects. The plugin is designed to be publishable to npm for use in other Nx workspaces.
+
+### Generator Usage
 
 ```bash
-nx generate @firemono/plugin:firebase-project --name <project-name> [--directory <directory>] [--tags tag1,tag2]
+nx generate @firemono/nx-firebase-plugin:firebase-project --name <project-name> [--directory <directory>] [--tags tag1,tag2]
 ```
 
-This creates a new Firebase project structure with:
-- Firebase configuration files (firebase.json, firestore.rules, etc.)
-- Emulator setup with export/import capabilities
-- Nx project configuration with build, serve, deploy targets
+### Improved Features
+
+- **Smart Tagging Strategy**: Automatically applies semantic tags
+  - `type:firebase` - Identifies Firebase infrastructure projects
+  - `scope:{name}` - Groups related projects by domain/feature
+  - `platform:firebase` - Indicates Firebase as deployment platform
+- **Consistent Naming**: Uses predictable project naming patterns (e.g., `{dir}-{name}-firebase`)
+- **Complete Firebase Setup**: Includes all Firebase configuration files and emulator support
+- **Proper Dependencies**: Sets up implicit dependencies with functions projects
+- **Ready for Publishing**: Configured for npm publishing with proper package.json and documentation
+
+### Generated Project Structure
+
+Creates `apps/{directory}/{name}/firebase/` with:
+- Complete Firebase configuration (firebase.json, rules, indexes)
+- Emulator data import/export setup
+- Nx targets for development, testing, and deployment
 
 ## Project Structure & Dependencies
 

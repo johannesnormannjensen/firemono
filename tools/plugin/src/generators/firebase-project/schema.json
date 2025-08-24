@@ -2,25 +2,33 @@
   "$schema": "http://json-schema.org/schema",
   "cli": "nx",
   "id": "firebase-project",
-  "title": "Add Firebase Project",
+  "title": "Generate Firebase Project",
+  "description": "Generate a new Firebase project with emulator support, deployment targets, and proper Nx integration",
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
       "description": "The name of the Firebase project",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$",
       "x-prompt": "What name would you like to use for your Firebase project?"
     },
     "directory": {
-      "type": "string",
-      "description": "An optional directory to place the project under (apps/<directory>)",
-      "x-prompt": "In which directory should the project be nested (apps/<directory>)?",
+      "type": "string", 
+      "description": "Optional directory to place the project under (apps/<directory>/<name>/firebase)",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-/]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$",
+      "x-prompt": {
+        "message": "In which directory should the project be nested?",
+        "type": "input"
+      },
       "default": ""
     },
     "tags": {
       "type": "string",
-      "description": "Comma-separated tags to apply to the project",
+      "description": "Comma-separated tags to apply to the project (in addition to automatic tags: type:firebase, scope:{name}, platform:firebase)",
+      "examples": ["backend,api", "e2e,testing", "feature,auth"],
       "default": ""
     }
   },
-  "required": ["name"]
+  "required": ["name"],
+  "additionalProperties": false
 }

@@ -8,16 +8,29 @@ type Schema = GeneratorOptions;
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
   const projectDir = schema.directory ? `${names(schema.directory).fileName}/${nameParts.fileName}` : nameParts.fileName;
-  const projectName = `${projectDir.replace(/\//g, '-')}-firebase`;
-  const functionsProjectName = `${projectDir.replace(/\//g, '-')}-functions`;
+  
+  // Improved naming strategy - consistent with Nx conventions
+  const baseProjectName = projectDir.replace(/\//g, '-');
+  const firebaseProjectName = `${baseProjectName}-firebase`;
+  const functionsProjectName = `${baseProjectName}-functions`;
+  const angularProjectName = `${baseProjectName}-angular`;
+  
   const projectRoot = joinPathFragments('apps', projectDir, 'firebase');
   const parsedTags = schema.tags ? schema.tags.split(',').map(s => s.trim()) : [];
+  
+  // Enhanced tagging strategy following Nx best practices
+  const projectTags = [
+    ...parsedTags,
+    `type:firebase`,                    // Marks this as Firebase infrastructure project
+    `scope:${baseProjectName}`,        // Groups related projects by feature/domain
+    `platform:firebase`                // Indicates deployment platform
+  ];
 
   // Add Firebase project configuration based on demo-firebase pattern
-  addProjectConfiguration(tree, projectName, {
+  addProjectConfiguration(tree, firebaseProjectName, {
     root: projectRoot,
     projectType: 'application',
-    tags: [...parsedTags, `app:${nameParts.fileName}`, `scope:${nameParts.fileName}-firebase`],
+    tags: projectTags,
     implicitDependencies: [functionsProjectName],
     targets: {
       build: {
@@ -27,7 +40,7 @@ export default async function (tree: Tree, schema: Schema) {
       watch: {
         executor: 'nx:run-commands',
         options: { 
-          command: `nx watch --projects=${projectName},${functionsProjectName} -- nx build ${projectName}` 
+          command: `nx watch --projects=${firebaseProjectName},${functionsProjectName} -- nx build ${firebaseProjectName}` 
         }
       },
       lint: {
@@ -36,13 +49,13 @@ export default async function (tree: Tree, schema: Schema) {
       test: {
         executor: 'nx:run-commands',
         options: { 
-          command: `nx run-many --target=test --projects=tag:group:${nameParts.fileName}-functions` 
+          command: `nx run-many --target=test --projects=tag:scope:${baseProjectName}` 
         }
       },
       'test-watch': {
         executor: 'nx:run-commands',
         options: { 
-          command: `nx watch --projects=tag:group:${nameParts.fileName}-functions -- nx run-many --target=test --projects=tag:group:${nameParts.fileName}-functions` 
+          command: `nx watch --projects=tag:scope:${baseProjectName} -- nx run-many --target=test --projects=tag:scope:${baseProjectName}` 
         }
       },
       firebase: {
@@ -83,7 +96,7 @@ export default async function (tree: Tree, schema: Schema) {
         executor: 'nx:run-commands',
         options: { 
           cwd: projectRoot,
-          command: 'firebase emulators:export ./exports --force && bash ../../../tools/scripts/format-export.sh' 
+          command: 'firebase emulators:export ./exports --force' 
         }
       },
       getconfig: {
@@ -116,6 +129,10 @@ export default async function (tree: Tree, schema: Schema) {
   const templateOptions = {
     ...nameParts,
     projectName: nameParts.fileName,
+    baseProjectName,
+    firebaseProjectName,
+    functionsProjectName, 
+    angularProjectName,
     projectDir,
     tags: parsedTags,
     tmpl: '',

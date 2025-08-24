@@ -7,8 +7,8 @@
     "indexes": "./firestore.indexes.json"
   },
   "hosting": {
-    "site": "<%= projectName %>",
-    "predeploy": "npx -y nx build <%= projectName %>-angular",
+    "site": "<%= angularProjectName %>",
+    "predeploy": "npx -y nx build <%= angularProjectName %>",
     "public": "./public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
@@ -23,8 +23,8 @@
   },
   "functions": [
     {
-      "predeploy": "npx -y nx build <%= projectName %>-functions",
-      "codebase": "<%= projectName %>-functions",
+      "predeploy": "npx -y nx build <%= functionsProjectName %>",
+      "codebase": "<%= functionsProjectName %>",
       "source": "./functions"
     }
   ],

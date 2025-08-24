@@ -14,13 +14,14 @@ describe('Firebase Generator', () => {
     await generator(tree, {
       name: 'my-app',
       directory: 'apps',
-      tags: 'firebase,app'
+      tags: 'feature,test'
     });
   
     const projectJson = readJson(tree, 'apps/apps/my-app/firebase/project.json');
   
     expect(projectJson.projectType).toBe('application');
-    expect(projectJson.tags).toEqual(['firebase', 'app', 'app:my-app', 'scope:my-app-firebase']);
+    expect(projectJson.tags).toEqual(['feature', 'test', 'type:firebase', 'scope:apps-my-app', 'platform:firebase']);
+    expect(projectJson.implicitDependencies).toEqual(['apps-my-app-functions']);
   });
 
   it.skip('should handle projects without directory and tags', async () => {
