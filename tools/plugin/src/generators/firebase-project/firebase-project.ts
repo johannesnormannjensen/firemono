@@ -9,9 +9,10 @@ interface Schema {
 
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
-  const projectDir = schema.directory
-    ? `${names(schema.directory).fileName}/${nameParts.fileName}`
-    : nameParts.fileName;
+  const projectDir = schema.directory ? `${names(schema.directory).fileName}/${nameParts.fileName}` : nameParts.fileName;
+
+  
+
   const projectName = `${projectDir.replace(/\//g, '-')}-firebase`;
   const projectRoot = joinPathFragments('apps', projectDir, 'firebase');
   const parsedTags = schema.tags ? schema.tags.split(',').map(s => s.trim()) : [];
@@ -78,6 +79,9 @@ export default async function (tree: Tree, schema: Schema) {
   // list files to be generated
   console.log('Files to be generated:', tree.children(join(__dirname, '..', '..', '..', '..', '..', '..')));
   generateFiles(tree, join(__dirname, 'files'), projectRoot, templateOptions);
+
+  // Create 
+
 
   await formatFiles(tree);
 }
