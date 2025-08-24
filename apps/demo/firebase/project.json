@@ -45,14 +45,14 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "mkdir -p exports && if [ -d \"exports\" ] && [ \"$(ls -A exports)\" ]; then firebase emulators:start --only=functions,firestore,hosting,auth --import=./exports; else firebase emulators:start --only=functions,firestore,hosting,auth; fi"
+        "command": "firebase emulators:start --only=functions,firestore,hosting,auth --import=./emulator-data --export-on-exit=./emulator-data"
       }
     },
     "emulators:debug": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "mkdir -p exports && if [ -d \"exports\" ] && [ \"$(ls -A exports)\" ]; then firebase emulators:start --inspect-functions --only=functions,firestore,hosting,auth --import=./exports; else firebase emulators:start --inspect-functions --only=functions,firestore,hosting,auth; fi"
+        "command": "firebase emulators:start --inspect-functions --only=functions,firestore,hosting,auth --import=./emulator-data --export-on-exit=./emulator-data"
       }
     },
     "emulators:stop": {
@@ -89,7 +89,7 @@
       "options": {
         "commands": [
           "nx build demo-functions --watch",
-          "cd apps/demo/firebase && mkdir -p exports && firebase emulators:start --only=functions,firestore,hosting,auth"
+          "cd apps/demo/firebase && firebase emulators:start --only=functions,firestore,hosting,auth --import=./emulator-data --export-on-exit=./emulator-data"
         ],
         "parallel": true
       }
@@ -98,14 +98,14 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "firebase emulators:export ./exports --force"
+        "command": "firebase emulators:export ./emulator-data --force"
       }
     },
     "data:import": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/demo/firebase",
-        "command": "firebase emulators:start --import=./exports --export-on-exit=./exports"
+        "command": "firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data"
       }
     },
     "data:seed": {

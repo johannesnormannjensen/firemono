@@ -161,10 +161,10 @@ nx deploy-functions ${projectName}` : ''}
 
 ### Data Management
 \`\`\`bash
-# Export emulator data
+# Export emulator data (also auto-exported on emulator exit)
 nx data:export ${projectName}
 
-# Import emulator data
+# Import emulator data (also auto-imported on emulator start)
 nx data:import ${projectName}
 
 # Seed development data (customize the seed target)
@@ -225,7 +225,7 @@ ${features.includes('firestore') ? `├── firestore.rules       # Firestore 
 ├── firestore.indexes.json # Firestore indexes` : ''}
 ${features.includes('hosting') ? `├── public/               # Hosting files` : ''}
 ${features.includes('storage') ? `├── storage.rules         # Storage security rules` : ''}
-└── exports/              # Emulator data exports
+└── emulator-data/        # Emulator data exports (auto-imported/exported)
 \`\`\`
 
 ## Learn More
@@ -238,7 +238,7 @@ ${features.includes('storage') ? `├── storage.rules         # Storage secu
   tree.write(joinPathFragments(projectRoot, 'README.md'), readmeContent);
 }
 
-function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: string, initDir: string, dynamicConfig: any) {
+function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: string, initDir: string) {
   const functionsAppName = `${baseProjectName}-functions`;
   const functionsAppRoot = joinPathFragments(projectDir, 'functions');
   const functionsSourceDir = join(initDir, 'functions');
@@ -482,7 +482,7 @@ export default async function (tree: Tree, schema: Schema) {
   // Create Functions Nx app if functions are detected
   let functionsAppName: string | null = null;
   if (features.includes('functions')) {
-    functionsAppName = createFunctionsNxApp(tree, baseProjectName, projectDir, initDirResolved, null);
+    functionsAppName = createFunctionsNxApp(tree, baseProjectName, projectDir, initDirResolved);
   }
   
   // Get dynamic configuration based on detected features
@@ -547,7 +547,7 @@ export default async function (tree: Tree, schema: Schema) {
         options: { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators && dynamicConfig.emulatorServices 
-            ? `mkdir -p exports && if [ -d "exports" ] && [ "$(ls -A exports)" ]; then firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./exports; else firebase emulators:start --only=${dynamicConfig.emulatorServices}; fi`
+            ? `firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./emulator-data --export-on-exit=./emulator-data`
             : 'echo "No emulators configured"'
         }
       },
@@ -556,7 +556,7 @@ export default async function (tree: Tree, schema: Schema) {
         options: { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators && dynamicConfig.emulatorServices
-            ? `mkdir -p exports && if [ -d "exports" ] && [ "$(ls -A exports)" ]; then firebase emulators:start --inspect-functions --only=${dynamicConfig.emulatorServices} --import=./exports; else firebase emulators:start --inspect-functions --only=${dynamicConfig.emulatorServices}; fi`
+            ? `firebase emulators:start --inspect-functions --only=${dynamicConfig.emulatorServices} --import=./emulator-data --export-on-exit=./emulator-data`
             : 'echo "No emulators configured"'
         }
       },
@@ -596,13 +596,13 @@ export default async function (tree: Tree, schema: Schema) {
         options: functionsAppName && dynamicConfig.hasEmulators ? {
           commands: [
             `nx build ${functionsAppName} --watch`,
-            `cd ${projectRoot} && mkdir -p exports && firebase emulators:start --only=${dynamicConfig.emulatorServices}`
+            `cd ${projectRoot} && firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./emulator-data --export-on-exit=./emulator-data`
           ],
           parallel: true
         } : { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators 
-            ? `mkdir -p exports && firebase emulators:start --only=${dynamicConfig.emulatorServices}`
+            ? `firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./emulator-data --export-on-exit=./emulator-data`
             : 'echo "No development environment configured"'
         }
       },
@@ -610,14 +610,14 @@ export default async function (tree: Tree, schema: Schema) {
         executor: 'nx:run-commands',
         options: { 
           cwd: projectRoot,
-          command: 'firebase emulators:export ./exports --force' 
+          command: 'firebase emulators:export ./emulator-data --force' 
         }
       },
       'data:import': {
         executor: 'nx:run-commands',
         options: { 
           cwd: projectRoot,
-          command: 'firebase emulators:start --import=./exports --export-on-exit=./exports' 
+          command: 'firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data' 
         }
       },
       'data:seed': {
@@ -663,8 +663,8 @@ export default async function (tree: Tree, schema: Schema) {
   // Fix ESLint configuration conflicts
   fixEslintConfiguration(tree, projectRoot);
   
-  // Create exports directory for emulator data
-  tree.write(joinPathFragments(projectRoot, 'exports', '.gitkeep'), '# This directory stores emulator data exports\n');
+  // Create emulator-data directory for emulator data
+  tree.write(joinPathFragments(projectRoot, 'emulator-data', '.gitkeep'), '# This directory stores emulator data exports\n# The emulator-data directory is automatically used by Firebase emulators for data import/export\n# Data is automatically saved on emulator exit and loaded on startup\n');
   
   // Generate project-specific README
   generateProjectReadme(tree, projectRoot, baseProjectName, features, firebaseProjectName);
@@ -679,6 +679,9 @@ dist/
 
 # Node modules (if not already ignored)
 node_modules/
+
+# Emulator data (comment out if you want to commit emulator data)
+emulator-data/
 `;
   
   if (!existingGitignore.includes('.nx/')) {
