@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "cli": "nx",
+  "id": "init",
+  "title": "Initialize Firebase Project",
+  "description": "Initialize a Firebase project in your Nx workspace from an existing firebase init directory",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the Firebase project",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$",
+      "x-prompt": "What name would you like to use for this Firebase project?"
+    },
+    "initDirectory": {
+      "type": "string",
+      "description": "Path to the directory where you ran 'firebase init'",
+      "x-prompt": "What is the path to the directory where you ran 'firebase init'?"
+    },
+    "directory": {
+      "type": "string", 
+      "description": "Directory where the project should be created. Creates <directory>/<name>/ (defaults to 'apps')",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-/]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$",
+      "x-prompt": {
+        "message": "In which directory should the project be created?",
+        "type": "input"
+      },
+      "default": "apps"
+    }
+  },
+  "required": ["name", "initDirectory"],
+  "additionalProperties": false
+}

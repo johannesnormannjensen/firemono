@@ -1,5 +1,5 @@
 export interface GeneratorOptions {
   name: string;
-  initDir: string;
+  initDirectory: string;
   directory?: string;
 }

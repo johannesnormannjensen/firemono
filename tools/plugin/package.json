@@ -1,5 +1,5 @@
 {
-  "name": "@firemono/nx-firebase-plugin",
+  "name": "@firemono/app",
   "version": "1.0.0",
   "description": "Nx plugin for managing multiple Firebase projects in a monorepo",
   "author": "Johannes Firemono",

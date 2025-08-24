@@ -53,9 +53,10 @@ function detectFirebaseFeatures(initDir: string): string[] {
 
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
-  // If directory is specified, use it as the project directory name, otherwise use the project name
-  const projectDir = schema.directory ? names(schema.directory).fileName : nameParts.fileName;
-  const initDirResolved = resolve(schema.initDir);
+  // Create directory/name pattern: apps/my-app or custom-dir/my-app
+  const baseDir = schema.directory || 'apps';
+  const projectDir = `${baseDir}/${nameParts.fileName}`;
+  const initDirResolved = resolve(schema.initDirectory);
   
   // Validate that the init directory exists and has firebase.json
   if (!existsSync(initDirResolved)) {
@@ -67,10 +68,10 @@ export default async function (tree: Tree, schema: Schema) {
   }
   
   // Project naming strategy  
-  const baseProjectName = projectDir.replace(/\//g, '-');
+  const baseProjectName = nameParts.fileName;
   const firebaseProjectName = `${baseProjectName}-firebase`;
   
-  const projectRoot = joinPathFragments('apps', projectDir, 'firebase');
+  const projectRoot = joinPathFragments(projectDir, 'firebase');
   
   // Detect Firebase features from the init directory
   const features = detectFirebaseFeatures(initDirResolved);

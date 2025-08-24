@@ -1,6 +1,6 @@
 import { Tree, readJson, readProjectConfiguration } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import generator from './firebase-project';
+import generator from './init';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { mkdirSync, writeFileSync, rmSync } from 'fs';
@@ -40,17 +40,17 @@ describe('Firebase Generator', () => {
   it('should integrate Firebase project and generate proper configuration', async () => {
     await generator(tree, {
       name: 'my-app',
-      directory: 'projects',
-      initDir: tempInitDir
+      directory: 'apps',
+      initDirectory: tempInitDir
     });
   
-    const projectJson = readJson(tree, 'apps/projects/firebase/project.json');
+    const projectJson = readJson(tree, 'apps/my-app/firebase/project.json');
   
     expect(projectJson.projectType).toBe('application');
-    expect(projectJson.name).toBe('projects-firebase');
+    expect(projectJson.name).toBe('my-app-firebase');
     expect(projectJson.tags).toEqual([
       'type:firebase', 
-      'scope:projects', 
+      'scope:my-app', 
       'platform:firebase', 
       'feature:functions',
       'feature:firestore',
@@ -63,20 +63,20 @@ describe('Firebase Generator', () => {
     expect(projectJson.targets.deploy).toBeDefined();
     
     // Check that Firebase files were copied
-    expect(tree.exists('apps/projects/firebase/firebase.json')).toBe(true);
-    expect(tree.exists('apps/projects/firebase/.firebaserc')).toBe(true);
-    expect(tree.exists('apps/projects/firebase/firestore.rules')).toBe(true);
+    expect(tree.exists('apps/my-app/firebase/firebase.json')).toBe(true);
+    expect(tree.exists('apps/my-app/firebase/.firebaserc')).toBe(true);
+    expect(tree.exists('apps/my-app/firebase/firestore.rules')).toBe(true);
     
     // Verify firebase.json content was copied correctly
-    const copiedFirebaseJson = readJson(tree, 'apps/projects/firebase/firebase.json');
+    const copiedFirebaseJson = readJson(tree, 'apps/my-app/firebase/firebase.json');
     expect(copiedFirebaseJson.functions).toBeDefined();
     expect(copiedFirebaseJson.firestore).toBeDefined();
   });
 
-  it('should handle projects without directory parameter', async () => {
+  it('should handle projects without directory parameter (defaults to apps)', async () => {
     await generator(tree, {
       name: 'standalone-app',
-      initDir: tempInitDir
+      initDirectory: tempInitDir
     });
 
     const projectName = 'standalone-app-firebase';
@@ -93,21 +93,35 @@ describe('Firebase Generator', () => {
     expect(config.tags).toContain('feature:firestore');
   });
 
-  it('should throw error if initDir does not exist', async () => {
+  it('should work with custom directory', async () => {
+    await generator(tree, {
+      name: 'custom-app',
+      directory: 'libs',
+      initDirectory: tempInitDir
+    });
+
+    const projectName = 'custom-app-firebase';
+    const config = readProjectConfiguration(tree, projectName);
+
+    expect(config.root).toBe('libs/custom-app/firebase');
+    expect(config.projectType).toBe('application');
+  });
+
+  it('should throw error if initDirectory does not exist', async () => {
     await expect(generator(tree, {
       name: 'test-app',
-      initDir: '/nonexistent/path'
+      initDirectory: '/nonexistent/path'
     })).rejects.toThrow('Init directory does not exist');
   });
 
-  it('should throw error if initDir has no firebase.json', async () => {
+  it('should throw error if initDirectory has no firebase.json', async () => {
     const emptyDir = join(tmpdir(), `empty-dir-${Date.now()}`);
     mkdirSync(emptyDir, { recursive: true });
     
     try {
       await expect(generator(tree, {
         name: 'test-app',
-        initDir: emptyDir
+        initDirectory: emptyDir
       })).rejects.toThrow('No firebase.json found');
     } finally {
       rmSync(emptyDir, { recursive: true, force: true });
