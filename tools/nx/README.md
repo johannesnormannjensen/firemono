@@ -1,4 +1,4 @@
-# @firemono/nx-firebase-plugin
+# @firemono/nx
 
 An Nx plugin for managing multiple Firebase projects in a monorepo. This plugin provides generators to scaffold Firebase projects with proper Nx integration, including Firebase Functions, Firestore, Authentication, and hosting support.
 
@@ -14,7 +14,7 @@ An Nx plugin for managing multiple Firebase projects in a monorepo. This plugin 
 ## Installation
 
 ```bash
-npm install --save-dev @firemono/nx-firebase-plugin
+npm install --save-dev @firemono/nx
 ```
 
 ## Usage
@@ -36,11 +36,11 @@ The plugin integrates an existing Firebase project (created with `firebase init`
 
 2. **Integrate into Nx workspace**:
    ```bash
-   nx generate @firemono/nx-firebase-plugin:firebase-project --name my-app --initDir ./temp-firebase --directory projects
+   nx generate @firemono/nx:init-app --name my-app --initDirectory ./temp-firebase --directory apps/my-app
    ```
 
 This copies your Firebase configuration and creates:
-- `apps/projects/my-app/firebase/` - Firebase project with all your files
+- `apps/my-app/firebase/` - Firebase project with all your files
 - Nx project configuration with Firebase targets
 - Auto-detected tags based on Firebase features used
 - Proper Nx workspace integration
@@ -48,24 +48,23 @@ This copies your Firebase configuration and creates:
 ### Options
 
 - `--name`: Name for the Firebase project in your Nx workspace (required)
-- `--initDir`: Path to directory where you ran `firebase init` (required)
-- `--directory`: Optional directory to nest the project under (optional)
+- `--initDirectory`: Path to directory where you ran `firebase init` (required)
+- `--directory`: Full path where the project should be created (e.g., 'apps/my-app')
 
 ### Generated Project Structure
 
 ```
 apps/
-  {directory}/
-    {name}/
-      firebase/
-        ├── project.json          # Nx project configuration
-        ├── firebase.json         # Your Firebase configuration
-        ├── .firebaserc          # Firebase project settings
-        ├── firestore.rules      # Firestore rules (if you chose Firestore)
-        ├── firestore.indexes.json
-        ├── functions/           # Functions source (if you chose Functions)
-        ├── public/              # Hosting files (if you chose Hosting)
-        └── ...                  # Other files from firebase init
+  my-app/
+    firebase/
+      ├── project.json          # Nx project configuration
+      ├── firebase.json         # Your Firebase configuration
+      ├── .firebaserc          # Firebase project settings
+      ├── firestore.rules      # Firestore rules (if you chose Firestore)
+      ├── firestore.indexes.json
+      ├── functions/           # Functions source (if you chose Functions)
+      ├── public/              # Hosting files (if you chose Hosting)
+      └── ...                  # Other files from firebase init
 ```
 
 ### Auto-Generated Tags

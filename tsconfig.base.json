@@ -19,7 +19,7 @@
       "@firemono/demo/angular/environment": ["libs/demo/angular/environment/src/index.ts"],
       "@firemono/demo/data": ["libs/demo/data/src/index.ts"],
       "@firemono/demo/functions/user": ["libs/demo/functions/user/src/index.ts"],
-      "@firemono/nx": ["tools/plugin/src/index.ts"]
+      "@firemono/nx": ["tools/nx/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
