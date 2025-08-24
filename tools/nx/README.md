@@ -1,129 +1,195 @@
 # @firemono/nx
 
-An Nx plugin for managing multiple Firebase projects in a monorepo. This plugin provides generators to scaffold Firebase projects with proper Nx integration, including Firebase Functions, Firestore, Authentication, and hosting support.
+> Nx plugin for Firebase development with proper architecture
 
-## Features
+An Nx plugin that integrates Firebase projects into your Nx workspace with the **correct architecture** - Firebase Functions as proper Nx applications building to `dist/`, live reloading during development, and auto-persisted emulator data.
 
-- 🔥 **Multiple Firebase Projects**: Manage multiple Firebase projects within a single Nx workspace
-- ⚡ **Firebase Emulator Support**: Built-in emulator configuration with data import/export
-- 🏗️ **Consistent Project Structure**: Follows Nx conventions with proper tagging and dependencies
-- 🚀 **Deployment Targets**: Ready-to-use deployment targets for functions and hosting
-- 🧪 **Testing Integration**: Seamless testing setup for Firebase Functions
-- 📦 **Smart Tagging**: Automatic project tagging for better organization
+## ✨ Features
 
-## Installation
+- 🚀 **Functions as Nx Apps**: Firebase Functions are real Nx applications with proper TypeScript, ESLint, and testing setup
+- 📂 **Builds to dist/**: Functions build to workspace `dist/` directory following Nx conventions  
+- 🔄 **Live Reloading**: Watch mode rebuilds functions automatically during development
+- 💾 **Auto-Persisted Data**: Emulator data automatically saved/restored between sessions
+- 🏗️ **esbuild**: Fast builds with `@nx/esbuild` executor
+- 🧹 **Clean Architecture**: No copying, Firebase reads directly from dist
+- 🔧 **Full Nx Integration**: Lint, test, build, and deploy with Nx tooling
+
+## 📦 Installation
 
 ```bash
-npm install --save-dev @firemono/nx
+# Install the plugin
+npm install -D @firemono/nx
+
+# Or with yarn
+yarn add -D @firemono/nx
 ```
 
-## Usage
+## 🚀 Quick Start
 
-### Workflow
+### 1. Initialize Firebase Project
 
-The plugin integrates an existing Firebase project (created with `firebase init`) into your Nx workspace:
+First, create your Firebase project configuration:
 
-1. **Create and initialize Firebase project**:
-   ```bash
-   mkdir temp-firebase
-   cd temp-firebase
-   firebase login
-   firebase init
-   # Select features: Functions, Firestore, Hosting, etc.
-   # Choose your Firebase project
-   # Configure according to your needs
-   ```
-
-2. **Integrate into Nx workspace**:
-   ```bash
-   nx generate @firemono/nx:init-app --name my-app --initDirectory ./temp-firebase --directory apps/my-app
-   ```
-
-This copies your Firebase configuration and creates:
-- `apps/my-app/firebase/` - Firebase project with all your files
-- Nx project configuration with Firebase targets
-- Auto-detected tags based on Firebase features used
-- Proper Nx workspace integration
-
-### Options
-
-- `--name`: Name for the Firebase project in your Nx workspace (required)
-- `--initDirectory`: Path to directory where you ran `firebase init` (required)
-- `--directory`: Full path where the project should be created (e.g., 'apps/my-app')
-
-### Generated Project Structure
-
-```
-apps/
-  my-app/
-    firebase/
-      ├── project.json          # Nx project configuration
-      ├── firebase.json         # Your Firebase configuration
-      ├── .firebaserc          # Firebase project settings
-      ├── firestore.rules      # Firestore rules (if you chose Firestore)
-      ├── firestore.indexes.json
-      ├── functions/           # Functions source (if you chose Functions)
-      ├── public/              # Hosting files (if you chose Hosting)
-      └── ...                  # Other files from firebase init
+```bash
+mkdir my-firebase-init
+cd my-firebase-init
+firebase init
+# Select: Functions, Firestore, Hosting, Emulators
+# Choose TypeScript for functions
+cd ..
 ```
 
-### Auto-Generated Tags
+### 2. Generate Nx Firebase Project
 
-The plugin automatically applies semantic tags based on your Firebase setup:
-- `type:firebase` - Identifies Firebase infrastructure projects
-- `scope:{name}` - Groups related projects by domain/feature  
-- `platform:firebase` - Indicates Firebase as deployment platform
-- `feature:functions` - Added if Firebase Functions are detected
-- `feature:firestore` - Added if Firestore is detected  
-- `feature:hosting` - Added if Firebase Hosting is detected
-- `feature:storage` - Added if Firebase Storage is detected
-- `feature:emulators` - Added if emulators are configured
+```bash
+nx generate @firemono/nx:init-app --name my-app --directory apps/my-app --initDirectory ./my-firebase-init
+```
 
-### Available Targets
+This creates:
+- `apps/my-app/functions/` - Nx Functions app (builds to `dist/my-app/functions`)
+- `apps/my-app/firebase/` - Firebase project (uses functions from dist)
 
-Generated Firebase projects include these Nx targets:
+### 3. Start Development
 
-- `nx build {project-name}` - Build the project
-- `nx emulators:start {project-name}` - Start Firebase emulators
-- `nx emulators:debug {project-name}` - Start emulators with debugging
-- `nx emulators:export {project-name}` - Export emulator data
-- `nx deploy {project-name}` - Deploy to Firebase
-- `nx deploy-functions {project-name}` - Deploy only functions
-- `nx test {project-name}` - Run tests for related projects
+```bash
+# Start with live reloading
+nx dev my-app-firebase
 
-## Workflow Integration
+# Or build manually  
+nx build my-app-firebase
 
-This plugin is designed to work with:
+# Deploy to Firebase
+nx deploy my-app-firebase
+```
 
-1. **Firebase Functions**: Create Nx libraries for your functions and reference them in the generated project
-2. **Angular/React Apps**: Build web applications that deploy to Firebase Hosting
-3. **Shared Libraries**: Share code between frontend and backend using Nx path mapping
-
-## Example Monorepo Structure
+## 🏗️ Architecture
 
 ```
 apps/
-  ecommerce/
-    shop/
-      firebase/          # Firebase project (this plugin)
-    shop-angular/        # Angular app for hosting
-    shop-functions/      # Firebase Functions
-libs/
-  ecommerce/
-    shared/              # Shared models/types
-    payment/             # Payment functions library
+├── my-app/
+│   ├── functions/           # Nx Functions app
+│   │   ├── src/index.ts     # Source code
+│   │   └── project.json     # → builds to dist/my-app/functions
+│   └── firebase/            # Firebase project  
+│       ├── firebase.json    # → source: "../../../dist/my-app/functions"
+│       └── emulator-data/   # Auto-persisted data
+└── dist/
+    └── my-app/
+        └── functions/       # Firebase reads from here!
 ```
 
-## Requirements
+## 🎯 Benefits
+
+- **✅ Proper Nx Apps**: Functions follow Nx conventions with full tooling support
+- **✅ Workspace dist/**: All builds go to workspace `dist/` directory  
+- **✅ No File Copying**: Firebase reads directly from dist (no build step copying)
+- **✅ Live Development**: Watch mode + Firebase emulators = instant feedback
+- **✅ Auto-Persistence**: Emulator data saved/restored automatically
+- **✅ TypeScript First**: Full TypeScript support with proper configurations
+- **✅ Fast Builds**: esbuild for lightning-fast function builds
+
+## 📋 Generator Options
+
+```bash
+nx generate @firemono/nx:init-app [options]
+```
+
+| Option | Description | Required |
+|--------|-------------|----------|
+| `--name` | Name of the Firebase project | ✅ |
+| `--directory` | Directory where project should be created | ✅ |  
+| `--initDirectory` | Path to Firebase init directory | ✅ |
+
+### Example
+
+```bash
+nx generate @firemono/nx:init-app \
+  --name ecommerce \
+  --directory apps/ecommerce \
+  --initDirectory ./firebase-init-ecommerce
+```
+
+Creates:
+- `apps/ecommerce/functions/` (Nx app building to `dist/ecommerce/functions`)
+- `apps/ecommerce/firebase/` (Firebase project using dist functions)
+
+## 🔧 Generated Commands
+
+Each Firebase project gets these Nx targets:
+
+```bash
+# Development with live reloading
+nx dev my-app-firebase
+
+# Build functions and prepare for deployment  
+nx build my-app-firebase
+
+# Deploy to Firebase
+nx deploy my-app-firebase
+nx deploy-functions my-app-firebase
+
+# Emulator management
+nx emulators:start my-app-firebase
+nx emulators:debug my-app-firebase  
+nx emulators:stop my-app-firebase
+
+# Data management (auto-handled during dev)
+nx data:export my-app-firebase
+nx data:import my-app-firebase
+```
+
+## 🔄 Development Workflow
+
+1. **Start Development**:
+   ```bash
+   nx dev my-app-firebase
+   ```
+   This runs:
+   - `nx build my-app-functions --watch` (rebuilds on changes)
+   - Firebase emulators with auto-import/export
+
+2. **Edit Functions**: 
+   - Edit `apps/my-app/functions/src/index.ts`
+   - Functions rebuild automatically
+   - Firebase sees changes instantly
+
+3. **Data Persists**:
+   - Stop emulators (Ctrl+C) → data auto-exported  
+   - Restart → data auto-imported
+   - Zero manual data management
+
+## 🏷️ Project Tags
+
+Generated projects include semantic tags:
+
+- `type:firebase` - Firebase infrastructure project
+- `scope:{name}` - Groups related projects  
+- `platform:firebase` - Firebase deployment platform
+- `feature:{detected}` - Auto-detected Firebase features
+
+Use tags for targeted operations:
+```bash
+# Test all Firebase projects
+nx run-many --target=test --projects=tag:type:firebase
+
+# Build all projects in scope  
+nx run-many --target=build --projects=tag:scope:my-app
+```
+
+## 📋 Requirements
 
 - Nx workspace (v20.0.0+)
 - Node.js 18+
 - Firebase CLI (for deployment and emulators)
 
-## Contributing
+## 🤝 Contributing
 
-This plugin is part of the [nx-firebase-monorepo-example](https://github.com/johannesfiremono/nx-firebase-monorepo-example) project. Contributions are welcome!
+Contributions welcome! Please read the [contributing guide](https://github.com/johannesfiremono/nx-firebase-monorepo-example/blob/main/CONTRIBUTING.md).
 
-## License
+## 📄 License
 
-MIT
+MIT © [Johannes Firemono](https://github.com/johannesfiremono)
+
+---
+
+**Built with ❤️ for the Nx and Firebase communities**

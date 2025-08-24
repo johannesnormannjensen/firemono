@@ -1,37 +1,37 @@
 {
-  "name": "firemono-plugin",
+  "name": "firemono-nx-plugin",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "tools/plugin/src",
+  "sourceRoot": "tools/nx/src",
   "projectType": "library",
-  "tags": [],
+  "tags": ["publishable"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/tools/plugin",
-        "main": "tools/plugin/src/index.ts",
-        "tsConfig": "tools/plugin/tsconfig.lib.json",
+        "outputPath": "dist/tools/nx",
+        "main": "tools/nx/src/index.ts",
+        "tsConfig": "tools/nx/tsconfig.lib.json",
         "assets": [
-          "tools/plugin/*.md",
+          "tools/nx/*.md",
           {
-            "input": "./tools/plugin/src",
+            "input": "./tools/nx/src",
             "glob": "**/!(*.ts)",
             "output": "./src"
           },
           {
-            "input": "./tools/plugin/src",
+            "input": "./tools/nx/src",
             "glob": "**/*.d.ts",
             "output": "./src"
           },
           {
-            "input": "./tools/plugin",
+            "input": "./tools/nx",
             "glob": "generators.json",
             "output": "."
           },
           {
-            "input": "./tools/plugin",
-            "glob": "executors.json",
+            "input": "./tools/nx",
+            "glob": "package.json",
             "output": "."
           }
         ]
@@ -41,8 +41,16 @@
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "reportsDirectory": "../../coverage/tools/plugin"
+        "reportsDirectory": "../../coverage/tools/nx"
       }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "dist/tools/nx",
+        "command": "npm publish --access=public"
+      },
+      "dependsOn": ["build"]
     }
   }
 }
