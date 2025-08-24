@@ -260,7 +260,7 @@ function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: s
         executor: '@nx/esbuild:esbuild',
         outputs: ['{options.outputPath}'],
         options: {
-          outputPath: `dist/${functionsAppName}`,
+          outputPath: `dist/${baseProjectName}/functions`,
           main: `${functionsAppRoot}/src/index.ts`,
           tsConfig: `${functionsAppRoot}/tsconfig.app.json`,
           assets: [`${functionsAppRoot}/src/assets`],
@@ -511,12 +511,7 @@ export default async function (tree: Tree, schema: Schema) {
       build: {
         executor: 'nx:run-commands',
         options: functionsAppName ? {
-          commands: [
-            `nx build ${functionsAppName}`,
-            `rm -rf ${projectRoot}/functions`,
-            `cp -r dist/${functionsAppName} ${projectRoot}/functions`
-          ],
-          parallel: false
+          command: `nx build ${functionsAppName}`
         } : { 
           cwd: projectRoot,
           command: dynamicConfig.buildCommand 
@@ -598,13 +593,18 @@ export default async function (tree: Tree, schema: Schema) {
       },
       dev: {
         executor: 'nx:run-commands',
-        options: { 
+        options: functionsAppName && dynamicConfig.hasEmulators ? {
+          commands: [
+            `nx build ${functionsAppName} --watch`,
+            `cd ${projectRoot} && mkdir -p exports && firebase emulators:start --only=${dynamicConfig.emulatorServices}`
+          ],
+          parallel: true
+        } : { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators 
             ? `mkdir -p exports && firebase emulators:start --only=${dynamicConfig.emulatorServices}`
             : 'echo "No development environment configured"'
-        },
-        dependsOn: ['build']
+        }
       },
       'data:export': {
         executor: 'nx:run-commands',
@@ -641,7 +641,7 @@ export default async function (tree: Tree, schema: Schema) {
   const excludeDirs = functionsAppName ? ['functions'] : [];
   copyDirectoryToTree(tree, initDirResolved, projectRoot, excludeDirs);
   
-  // Update firebase.json to remove predeploy commands if we have functions
+  // Update firebase.json to point to dist and remove predeploy commands if we have functions
   if (functionsAppName) {
     const firebaseJsonPath = joinPathFragments(projectRoot, 'firebase.json');
     if (tree.exists(firebaseJsonPath)) {
@@ -649,10 +649,13 @@ export default async function (tree: Tree, schema: Schema) {
       if (firebaseConfig.functions && Array.isArray(firebaseConfig.functions)) {
         firebaseConfig.functions = firebaseConfig.functions.map((func: any) => {
           const { predeploy, ...rest } = func;
-          return rest;
+          return {
+            ...rest,
+            source: `../../../dist/${baseProjectName}/functions`
+          };
         });
         tree.write(firebaseJsonPath, JSON.stringify(firebaseConfig, null, 2));
-        logger.info('✅ Updated firebase.json to remove predeploy commands for Nx compatibility');
+        logger.info('✅ Updated firebase.json to use dist directory and removed predeploy commands for Nx compatibility');
       }
     }
   }
@@ -688,8 +691,9 @@ node_modules/
   console.log(`\n✅ Firebase project ${firebaseProjectName} integrated successfully!`);
   if (functionsAppName) {
     console.log(`\n🚀 Created Functions Nx app: ${functionsAppName}`);
-    console.log(`   - Builds to: dist/${functionsAppName}/`);
-    console.log(`   - Auto-copied to Firebase functions directory on build`);
+    console.log(`   - Builds to: dist/${baseProjectName}/functions/`);
+    console.log(`   - Firebase uses dist directory directly (no copying needed!)`);
+    console.log(`   - Watch mode available for live development`);
   }
   console.log(`\n🔥 Detected Firebase features: ${features.join(', ') || 'none'}`);
   console.log(`\n📂 Project created at: ${projectRoot}`);
