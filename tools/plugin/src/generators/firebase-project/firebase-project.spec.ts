@@ -20,7 +20,7 @@ describe('Firebase Generator', () => {
     const projectJson = readJson(tree, 'apps/apps/my-app/firebase/project.json');
   
     expect(projectJson.projectType).toBe('application');
-    expect(projectJson.tags).toEqual(['firebase', 'app']);
+    expect(projectJson.tags).toEqual(['firebase', 'app', 'app:my-app', 'scope:my-app-firebase']);
   });
 
   it.skip('should handle projects without directory and tags', async () => {

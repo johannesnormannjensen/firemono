@@ -1,48 +1,4 @@
 {
-  "projectDir": "<%= projectDir %>/firebase",
-  "database": {
-    "rules": "database.rules.json"
-  },
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "hosting": {
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
-  "storage": {
-    "rules": "storage.rules"
-  },
-  "functions": [
-    {
-      "predeploy": "npx nx build <%= projectName %>",
-      "codebase": "functions",
-      "source": "dist/apps/functions"
-    }
-  ],
-  "emulators": {
-    "auth": { "host": "0.0.0.0", "port": 9099 },
-    "functions": { "host": "0.0.0.0", "port": 5001 },
-    "firestore": { "host": "0.0.0.0", "port": 8080 },
-    "database": { "host": "0.0.0.0", "port": 9000 },
-    "hosting": { "host": "0.0.0.0", "port": 5000 },
-    "pubsub": { "host": "0.0.0.0", "port": 8085 },
-    "storage": { "host": "0.0.0.0", "port": 9199 },
-    "eventarc": { "host": "0.0.0.0", "port": 9299 },
-    "ui": { "host": "0.0.0.0", "enabled": true },
-    "singleProjectMode": true
-  }
-}
-
-{
-  "projectDir": "<%= projectDir %>",
   "database": {
     "rules": "./database.rules.json"
   },
@@ -52,8 +8,9 @@
   },
   "hosting": {
     "site": "<%= projectName %>",
-    "predeploy": "npx -y nx build <%= projectName %>-web",
+    "predeploy": "npx -y nx build <%= projectName %>-angular",
     "public": "./public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",

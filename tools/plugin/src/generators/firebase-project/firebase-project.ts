@@ -1,27 +1,24 @@
 import { Tree, addProjectConfiguration, generateFiles, names, joinPathFragments, formatFiles } from '@nx/devkit';
 import { join } from 'path';
 
-interface Schema {
-  name: string;
-  directory?: string;
-  tags?: string;
-}
+import { GeneratorOptions } from './schema';
+
+type Schema = GeneratorOptions;
 
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
   const projectDir = schema.directory ? `${names(schema.directory).fileName}/${nameParts.fileName}` : nameParts.fileName;
-
-  
-
   const projectName = `${projectDir.replace(/\//g, '-')}-firebase`;
+  const functionsProjectName = `${projectDir.replace(/\//g, '-')}-functions`;
   const projectRoot = joinPathFragments('apps', projectDir, 'firebase');
   const parsedTags = schema.tags ? schema.tags.split(',').map(s => s.trim()) : [];
 
+  // Add Firebase project configuration based on demo-firebase pattern
   addProjectConfiguration(tree, projectName, {
     root: projectRoot,
     projectType: 'application',
-    tags: parsedTags,
-    implicitDependencies: [],
+    tags: [...parsedTags, `app:${nameParts.fileName}`, `scope:${nameParts.fileName}-firebase`],
+    implicitDependencies: [functionsProjectName],
     targets: {
       build: {
         executor: 'nx:run-commands',
@@ -29,59 +26,102 @@ export default async function (tree: Tree, schema: Schema) {
       },
       watch: {
         executor: 'nx:run-commands',
-        options: { command: `nx run-many --targets=build --projects=tag:${projectName}:dep:${projectName} --parallel=100 --watch` }
+        options: { 
+          command: `nx watch --projects=${projectName},${functionsProjectName} -- nx build ${projectName}` 
+        }
       },
       lint: {
-        executor: 'nx:run-commands',
-        options: { command: `nx run-many --targets=lint --projects=tag:${projectName}:dep:${projectName} --parallel=100` }
+        executor: '@nx/eslint:lint'
       },
       test: {
         executor: 'nx:run-commands',
-        options: { command: `nx run-many --targets=test --projects=tag:${projectName}:dep:${projectName} --parallel=100` }
+        options: { 
+          command: `nx run-many --target=test --projects=tag:group:${nameParts.fileName}-functions` 
+        }
+      },
+      'test-watch': {
+        executor: 'nx:run-commands',
+        options: { 
+          command: `nx watch --projects=tag:group:${nameParts.fileName}-functions -- nx run-many --target=test --projects=tag:group:${nameParts.fileName}-functions` 
+        }
       },
       firebase: {
         executor: 'nx:run-commands',
-        options: { command: 'firebase --config=firebase.json' },
-        configurations: { production: { command: 'firebase --config=firebase.json' } }
+        options: { 
+          cwd: projectRoot,
+          forwardAllArgs: true,
+          command: 'firebase' 
+        }
       },
       killports: {
         executor: 'nx:run-commands',
-        options: { command: 'kill-port --port 9099,5001,8080,9000,5000,8085,9199,9299,4000,4400,4500' }
+        options: { 
+          command: 'npx -y kill-port --port 9099,5001,8080,9000,5000,8085,9199,9299,4000,4400,4500' 
+        }
+      },
+      'emulators:start': {
+        executor: 'nx:run-commands',
+        options: { 
+          cwd: projectRoot,
+          command: 'firebase emulators:start --only=functions,firestore,auth --import=./exports' 
+        }
+      },
+      'emulators:debug': {
+        executor: 'nx:run-commands',
+        options: { 
+          cwd: projectRoot,
+          command: 'firebase emulators:start --inspect-functions --only=functions,firestore,auth --import=./exports' 
+        }
+      },
+      'emulators:stop': {
+        executor: 'nx:run-commands',
+        options: { 
+          command: 'npx -y kill-port --port 9099,5001,8080,9000,5000,8085,9199,9299,4000,4400,4500' 
+        }
+      },
+      'emulators:export': {
+        executor: 'nx:run-commands',
+        options: { 
+          cwd: projectRoot,
+          command: 'firebase emulators:export ./exports --force && bash ../../../tools/scripts/format-export.sh' 
+        }
       },
       getconfig: {
         executor: 'nx:run-commands',
-        options: { command: `nx run ${projectName}:firebase functions:config:get > ${projectRoot}/.runtimeconfig.json` }
-      },
-      emulate: {
-        executor: 'nx:run-commands',
-        options: { commands: [`nx run ${projectName}:killports`], parallel: false }
-      },
-      serve: {
-        executor: 'nx:run-commands',
-        options: { commands: [`nx run ${projectName}:watch`] }
+        options: { 
+          cwd: projectRoot,
+          command: 'firebase --config=firebase.json functions:config:get > .runtimeconfig.json' 
+        }
       },
       deploy: {
         executor: 'nx:run-commands',
-        dependsOn: ['build'],
-        options: { command: `nx run ${projectName}:firebase deploy` }
+        options: { 
+          cwd: projectRoot,
+          command: 'firebase deploy' 
+        },
+        dependsOn: ['build']
+      },
+      'deploy-functions': {
+        executor: 'nx:run-commands',
+        options: { 
+          cwd: projectRoot,
+          command: `firebase deploy --only functions:${functionsProjectName}` 
+        },
+        dependsOn: ['build']
       }
     }
   }, true);
 
-  // Generate files
+  // Generate files from templates
   const templateOptions = {
     ...nameParts,
+    projectName: nameParts.fileName,
     projectDir,
     tags: parsedTags,
     tmpl: '',
   };
-  console.log('🛠 Generating files from:', join(__dirname, 'files'));
-  // list files to be generated
-  console.log('Files to be generated:', tree.children(join(__dirname, '..', '..', '..', '..', '..', '..')));
+  
   generateFiles(tree, join(__dirname, 'files'), projectRoot, templateOptions);
-
-  // Create 
-
 
   await formatFiles(tree);
 }
