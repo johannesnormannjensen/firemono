@@ -51,13 +51,24 @@ function detectFirebaseFeatures(initDir: string): string[] {
   }
 }
 
-function getDynamicConfiguration(features: string[]) {
+function getDynamicConfiguration(features: string[], initDir?: string) {
   const hasEmulators = features.includes('emulators');
   const hasFunctions = features.includes('functions');
   const hasFirestore = features.includes('firestore');
   const hasDatabase = features.includes('database');
   const hasStorage = features.includes('storage');
   const hasHosting = features.includes('hosting');
+  
+  // Check if functions directory has proper setup
+  const functionsHasPackageJson = initDir && hasFunctions 
+    ? existsSync(join(initDir, 'functions', 'package.json'))
+    : false;
+    
+  const functionsHasTsConfig = initDir && hasFunctions 
+    ? existsSync(join(initDir, 'functions', 'tsconfig.json'))
+    : false;
+    
+  const functionsIsComplete = functionsHasPackageJson && functionsHasTsConfig;
   
   // Build emulator services list
   const emulatorServices = [];
@@ -95,7 +106,13 @@ function getDynamicConfiguration(features: string[]) {
     emulatorPorts: emulatorPorts.join(','),
     hasFunctions,
     hasEmulators,
-    buildCommand: hasFunctions ? 'npm run build --prefix functions' : 'echo "No build needed"'
+    buildCommand: functionsIsComplete 
+      ? 'npm run build --prefix functions' 
+      : hasFunctions 
+        ? 'echo "⚠️  Functions detected but setup incomplete. Run \'firebase init functions\' to complete setup."' 
+        : 'echo "✅ No build needed"',
+    functionsHasPackageJson,
+    functionsIsComplete
   };
 }
 
@@ -209,6 +226,48 @@ ${features.includes('storage') ? `├── storage.rules         # Storage secu
   tree.write(joinPathFragments(projectRoot, 'README.md'), readmeContent);
 }
 
+function fixEslintConfiguration(tree: Tree, projectRoot: string) {
+  const functionsEslintPath = joinPathFragments(projectRoot, 'functions', '.eslintrc.js');
+  
+  if (tree.exists(functionsEslintPath)) {
+    // Use a minimal ESLint config that doesn't depend on external plugins
+    const nxCompatibleEslintConfig = `module.exports = {
+  root: true,
+  env: {
+    es6: true,
+    node: true,
+  },
+  extends: [
+    "eslint:recommended",
+  ],
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: "module",
+  },
+  ignorePatterns: [
+    "/lib/**/*", // Ignore built files.
+    "/generated/**/*", // Ignore generated files.
+    "node_modules/**/*",
+  ],
+  rules: {
+    "no-unused-vars": "warn",
+    "no-console": "off", // Allow console in functions
+  },
+};
+`;
+    
+    tree.write(functionsEslintPath, nxCompatibleEslintConfig);
+    logger.info('✅ Updated Functions ESLint configuration for Nx compatibility');
+  }
+  
+  // Also remove any other conflicting ESLint files
+  const rootEslintPath = joinPathFragments(projectRoot, '.eslintrc.js');
+  if (tree.exists(rootEslintPath)) {
+    tree.delete(rootEslintPath);
+    logger.info('🗑️  Removed root .eslintrc.js to avoid conflicts with Nx ESLint configuration');
+  }
+}
+
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
   // Use the full directory path provided (e.g., 'apps/my-app')
@@ -252,7 +311,7 @@ export default async function (tree: Tree, schema: Schema) {
   const features = detectFirebaseFeatures(initDirResolved);
   
   // Get dynamic configuration based on detected features
-  const dynamicConfig = getDynamicConfiguration(features);
+  const dynamicConfig = getDynamicConfiguration(features, initDirResolved);
   
   // Auto-generate tags based on detected features
   const projectTags = [
@@ -393,6 +452,9 @@ export default async function (tree: Tree, schema: Schema) {
 
   // Copy Firebase files from init directory to Nx workspace
   copyDirectoryToTree(tree, initDirResolved, projectRoot);
+  
+  // Fix ESLint configuration conflicts
+  fixEslintConfiguration(tree, projectRoot);
   
   // Generate project-specific README
   generateProjectReadme(tree, projectRoot, baseProjectName, features, firebaseProjectName);
