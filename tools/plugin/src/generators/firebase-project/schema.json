@@ -19,10 +19,10 @@
     },
     "directory": {
       "type": "string", 
-      "description": "Optional directory to place the project under (apps/<directory>/<name>/firebase)",
+      "description": "Optional directory path for the project (defaults to project name). Creates apps/<directory>/firebase",
       "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-/]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$",
       "x-prompt": {
-        "message": "In which directory should the project be nested?",
+        "message": "Directory path for the project (or press enter to use project name)?",
         "type": "input"
       },
       "default": ""

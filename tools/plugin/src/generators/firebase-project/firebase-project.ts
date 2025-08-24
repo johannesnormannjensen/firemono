@@ -53,7 +53,8 @@ function detectFirebaseFeatures(initDir: string): string[] {
 
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
-  const projectDir = schema.directory ? `${names(schema.directory).fileName}/${nameParts.fileName}` : nameParts.fileName;
+  // If directory is specified, use it as the project directory name, otherwise use the project name
+  const projectDir = schema.directory ? names(schema.directory).fileName : nameParts.fileName;
   const initDirResolved = resolve(schema.initDir);
   
   // Validate that the init directory exists and has firebase.json
