@@ -1,4 +1,4 @@
-import { Tree, addProjectConfiguration, names, joinPathFragments, formatFiles, readJson, logger } from '@nx/devkit';
+import { Tree, addProjectConfiguration, names, joinPathFragments, formatFiles, logger } from '@nx/devkit';
 import { existsSync, readdirSync, statSync } from 'fs';
 import { join, resolve } from 'path';
 
@@ -6,7 +6,7 @@ import { GeneratorOptions } from './schema';
 
 type Schema = GeneratorOptions;
 
-function copyDirectoryToTree(tree: Tree, sourceDir: string, targetDir: string) {
+function copyDirectoryToTree(tree: Tree, sourceDir: string, targetDir: string, excludeDirs: string[] = []) {
   if (!existsSync(sourceDir)) {
     return;
   }
@@ -14,11 +14,16 @@ function copyDirectoryToTree(tree: Tree, sourceDir: string, targetDir: string) {
   const items = readdirSync(sourceDir);
   
   for (const item of items) {
+    // Skip excluded directories
+    if (excludeDirs.includes(item)) {
+      continue;
+    }
+    
     const sourcePath = join(sourceDir, item);
     const targetPath = joinPathFragments(targetDir, item);
     
     if (statSync(sourcePath).isDirectory()) {
-      copyDirectoryToTree(tree, sourcePath, targetPath);
+      copyDirectoryToTree(tree, sourcePath, targetPath, excludeDirs);
     } else {
       const content = require('fs').readFileSync(sourcePath, 'utf8');
       tree.write(targetPath, content);
@@ -51,7 +56,7 @@ function detectFirebaseFeatures(initDir: string): string[] {
   }
 }
 
-function getDynamicConfiguration(features: string[], initDir?: string) {
+function getDynamicConfiguration(features: string[], initDir?: string, functionsAppName?: string) {
   const hasEmulators = features.includes('emulators');
   const hasFunctions = features.includes('functions');
   const hasFirestore = features.includes('firestore');
@@ -101,18 +106,25 @@ function getDynamicConfiguration(features: string[], initDir?: string) {
     emulatorPorts.push('9099');
   }
   
+  // Use Nx build command if we have a functions app - will be fixed in main function
+  let buildCommand = 'echo "✅ No build needed"';
+  if (hasFunctions && functionsAppName) {
+    buildCommand = 'nx-build-functions'; // placeholder, will be replaced
+  } else if (functionsIsComplete) {
+    buildCommand = 'npm run build --prefix functions';
+  } else if (hasFunctions) {
+    buildCommand = 'echo "⚠️  Functions detected but setup incomplete. Run \'firebase init functions\' to complete setup."';
+  }
+  
   return {
     emulatorServices: emulatorServices.join(','),
     emulatorPorts: emulatorPorts.join(','),
     hasFunctions,
     hasEmulators,
-    buildCommand: functionsIsComplete 
-      ? 'npm run build --prefix functions' 
-      : hasFunctions 
-        ? 'echo "⚠️  Functions detected but setup incomplete. Run \'firebase init functions\' to complete setup."' 
-        : 'echo "✅ No build needed"',
+    buildCommand,
     functionsHasPackageJson,
-    functionsIsComplete
+    functionsIsComplete,
+    functionsAppName
   };
 }
 
@@ -226,41 +238,198 @@ ${features.includes('storage') ? `├── storage.rules         # Storage secu
   tree.write(joinPathFragments(projectRoot, 'README.md'), readmeContent);
 }
 
-function fixEslintConfiguration(tree: Tree, projectRoot: string) {
-  const functionsEslintPath = joinPathFragments(projectRoot, 'functions', '.eslintrc.js');
+function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: string, initDir: string, dynamicConfig: any) {
+  const functionsAppName = `${baseProjectName}-functions`;
+  const functionsAppRoot = joinPathFragments(projectDir, 'functions');
+  const functionsSourceDir = join(initDir, 'functions');
   
-  if (tree.exists(functionsEslintPath)) {
-    // Use a minimal ESLint config that doesn't depend on external plugins
-    const nxCompatibleEslintConfig = `module.exports = {
-  root: true,
-  env: {
-    es6: true,
-    node: true,
-  },
-  extends: [
-    "eslint:recommended",
-  ],
-  parserOptions: {
-    ecmaVersion: 2018,
-    sourceType: "module",
-  },
-  ignorePatterns: [
-    "/lib/**/*", // Ignore built files.
-    "/generated/**/*", // Ignore generated files.
-    "node_modules/**/*",
-  ],
-  rules: {
-    "no-unused-vars": "warn",
-    "no-console": "off", // Allow console in functions
-  },
-};
-`;
-    
-    tree.write(functionsEslintPath, nxCompatibleEslintConfig);
-    logger.info('✅ Updated Functions ESLint configuration for Nx compatibility');
+  if (!existsSync(functionsSourceDir)) {
+    logger.warn('⚠️  No functions directory found in init directory');
+    return null;
   }
   
-  // Also remove any other conflicting ESLint files
+  // Create Functions app project.json
+  const functionsProjectConfig = {
+    name: functionsAppName,
+    $schema: '../../../node_modules/nx/schemas/project-schema.json',
+    sourceRoot: `${functionsAppRoot}/src`,
+    projectType: 'application',
+    tags: [`app:${baseProjectName}`, `scope:${baseProjectName}-firebase`, `group:${baseProjectName}-functions`],
+    targets: {
+      build: {
+        executor: '@nx/esbuild:esbuild',
+        outputs: ['{options.outputPath}'],
+        options: {
+          outputPath: `dist/${functionsAppName}`,
+          main: `${functionsAppRoot}/src/index.ts`,
+          tsConfig: `${functionsAppRoot}/tsconfig.app.json`,
+          assets: [`${functionsAppRoot}/src/assets`],
+          generatePackageJson: true,
+          platform: 'node',
+          bundle: true,
+          thirdParty: false,
+          dependenciesFieldType: 'dependencies',
+          target: 'node22',
+          format: ['cjs'],
+          esbuildOptions: {
+            logLevel: 'info'
+          }
+        }
+      },
+      lint: {
+        executor: '@nx/eslint:lint'
+      },
+      test: {
+        executor: '@nx/vite:test',
+        outputs: ['{options.reportsDirectory}'],
+        options: {
+          reportsDirectory: `../../../coverage/${functionsAppRoot}`
+        }
+      }
+    }
+  };
+  
+  tree.write(joinPathFragments(functionsAppRoot, 'project.json'), JSON.stringify(functionsProjectConfig, null, 2));
+  
+  // Copy functions source code
+  const functionsIndexPath = join(functionsSourceDir, 'src', 'index.ts');
+  if (existsSync(functionsIndexPath)) {
+    let functionsContent = require('fs').readFileSync(functionsIndexPath, 'utf8');
+    // Uncomment the sample function if it exists
+    if (functionsContent.includes('// export const helloWorld')) {
+      functionsContent = functionsContent.replace('// export const helloWorld', 'export const helloWorld');
+      functionsContent = functionsContent.replace('//   logger.info', '  logger.info');
+      functionsContent = functionsContent.replace('//   response.send', '  response.send');
+      functionsContent = functionsContent.replace('// });', '});');
+    }
+    tree.write(joinPathFragments(functionsAppRoot, 'src', 'index.ts'), functionsContent);
+  }
+  
+  // Create TypeScript configurations
+  const tsConfigBase = {
+    extends: '../../../tsconfig.base.json',
+    files: [],
+    include: [],
+    references: [
+      { path: './tsconfig.app.json' },
+      { path: './tsconfig.spec.json' }
+    ],
+    compilerOptions: {
+      esModuleInterop: true
+    }
+  };
+  
+  const tsConfigApp = {
+    extends: './tsconfig.json',
+    compilerOptions: {
+      outDir: '../../../dist/out-tsc',
+      module: 'commonjs',
+      types: ['node'],
+      target: 'es2020'
+    },
+    exclude: ['vite.config.ts', 'src/**/*.spec.ts', 'src/**/*.test.ts'],
+    include: ['src/**/*.ts']
+  };
+  
+  const tsConfigSpec = {
+    extends: './tsconfig.json',
+    compilerOptions: {
+      outDir: '../../../dist/out-tsc',
+      types: ['vitest/globals', 'vitest/importMeta', 'vite/client', 'node', 'vitest']
+    },
+    include: [
+      'vite.config.ts', 'vite.config.mts', 'vitest.config.ts', 'vitest.config.mts',
+      'src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/*.test.tsx', 'src/**/*.spec.tsx',
+      'src/**/*.test.js', 'src/**/*.spec.js', 'src/**/*.test.jsx', 'src/**/*.spec.jsx',
+      'src/**/*.d.ts'
+    ]
+  };
+  
+  tree.write(joinPathFragments(functionsAppRoot, 'tsconfig.json'), JSON.stringify(tsConfigBase, null, 2));
+  tree.write(joinPathFragments(functionsAppRoot, 'tsconfig.app.json'), JSON.stringify(tsConfigApp, null, 2));
+  tree.write(joinPathFragments(functionsAppRoot, 'tsconfig.spec.json'), JSON.stringify(tsConfigSpec, null, 2));
+  
+  // Create ESLint config
+  const eslintConfig = `import baseConfig from '../../../eslint.config.mjs';
+
+export default [
+  ...baseConfig,
+  {
+    files: ['**/*.json'],
+    rules: {
+      '@nx/dependency-checks': [
+        'error',
+        {
+          ignoredFiles: [
+            '{projectRoot}/eslint.config.{js,cjs,mjs}',
+            '{projectRoot}/esbuild.config.{js,ts,mjs,mts}',
+            '{projectRoot}/vite.config.{js,ts,mjs,mts}',
+          ],
+        },
+      ],
+    },
+    languageOptions: {
+      parser: await import('jsonc-eslint-parser'),
+    },
+  },
+];`;
+  
+  tree.write(joinPathFragments(functionsAppRoot, 'eslint.config.mjs'), eslintConfig);
+  
+  // Create Vite config
+  const viteConfig = `import { defineConfig } from 'vite';
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
+
+export default defineConfig(() => ({
+  root: __dirname,
+  cacheDir: '../../../node_modules/.vite/${functionsAppRoot}',
+  plugins: [nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
+  test: {
+    watch: false,
+    globals: true,
+    passWithNoTests: true,
+    environment: 'node',
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    reporters: ['default'],
+    coverage: {
+      reportsDirectory: '../../../coverage/${functionsAppRoot}',
+      provider: 'v8' as const,
+    },
+  },
+}));`;
+  
+  tree.write(joinPathFragments(functionsAppRoot, 'vite.config.ts'), viteConfig);
+  
+  // Create package.json for development
+  const functionsPackageJson = {
+    name: 'functions',
+    engines: { node: '22' },
+    main: 'index.cjs',
+    dependencies: {
+      'firebase-admin': '^13.2.0',
+      'firebase-functions': '^6.0.1'
+    },
+    devDependencies: {
+      '@typescript-eslint/eslint-plugin': '^5.12.0',
+      '@typescript-eslint/parser': '^5.12.0',
+      eslint: '^8.9.0',
+      'eslint-config-google': '^0.14.0',
+      'eslint-plugin-import': '^2.25.4',
+      'firebase-functions-test': '^3.1.0',
+      typescript: '^4.9.0'
+    },
+    private: true
+  };
+  
+  tree.write(joinPathFragments(functionsAppRoot, 'package.json'), JSON.stringify(functionsPackageJson, null, 2));
+  
+  logger.info(`✅ Created Functions Nx app: ${functionsAppName}`);
+  return functionsAppName;
+}
+
+function fixEslintConfiguration(tree: Tree, projectRoot: string) {
+  // Remove any conflicting ESLint files in Firebase directory
   const rootEslintPath = joinPathFragments(projectRoot, '.eslintrc.js');
   if (tree.exists(rootEslintPath)) {
     tree.delete(rootEslintPath);
@@ -310,8 +479,19 @@ export default async function (tree: Tree, schema: Schema) {
   // Detect Firebase features from the init directory
   const features = detectFirebaseFeatures(initDirResolved);
   
+  // Create Functions Nx app if functions are detected
+  let functionsAppName: string | null = null;
+  if (features.includes('functions')) {
+    functionsAppName = createFunctionsNxApp(tree, baseProjectName, projectDir, initDirResolved, null);
+  }
+  
   // Get dynamic configuration based on detected features
-  const dynamicConfig = getDynamicConfiguration(features, initDirResolved);
+  const dynamicConfig = getDynamicConfiguration(features, initDirResolved, functionsAppName);
+  
+  // Fix the build command if we have functions
+  if (functionsAppName && dynamicConfig.buildCommand === 'nx-build-functions') {
+    dynamicConfig.buildCommand = `nx build ${functionsAppName} && rm -rf ${projectRoot}/functions && cp -r dist/${functionsAppName} ${projectRoot}/functions`;
+  }
   
   // Auto-generate tags based on detected features
   const projectTags = [
@@ -330,7 +510,14 @@ export default async function (tree: Tree, schema: Schema) {
     targets: {
       build: {
         executor: 'nx:run-commands',
-        options: { 
+        options: functionsAppName ? {
+          commands: [
+            `nx build ${functionsAppName}`,
+            `rm -rf ${projectRoot}/functions`,
+            `cp -r dist/${functionsAppName} ${projectRoot}/functions`
+          ],
+          parallel: false
+        } : { 
           cwd: projectRoot,
           command: dynamicConfig.buildCommand 
         }
@@ -365,7 +552,7 @@ export default async function (tree: Tree, schema: Schema) {
         options: { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators && dynamicConfig.emulatorServices 
-            ? `firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./exports` 
+            ? `mkdir -p exports && if [ -d "exports" ] && [ "$(ls -A exports)" ]; then firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./exports; else firebase emulators:start --only=${dynamicConfig.emulatorServices}; fi`
             : 'echo "No emulators configured"'
         }
       },
@@ -374,7 +561,7 @@ export default async function (tree: Tree, schema: Schema) {
         options: { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators && dynamicConfig.emulatorServices
-            ? `firebase emulators:start --inspect-functions --only=${dynamicConfig.emulatorServices} --import=./exports`
+            ? `mkdir -p exports && if [ -d "exports" ] && [ "$(ls -A exports)" ]; then firebase emulators:start --inspect-functions --only=${dynamicConfig.emulatorServices} --import=./exports; else firebase emulators:start --inspect-functions --only=${dynamicConfig.emulatorServices}; fi`
             : 'echo "No emulators configured"'
         }
       },
@@ -414,7 +601,7 @@ export default async function (tree: Tree, schema: Schema) {
         options: { 
           cwd: projectRoot,
           command: dynamicConfig.hasEmulators 
-            ? `firebase emulators:start --only=${dynamicConfig.emulatorServices} --import=./exports`
+            ? `mkdir -p exports && firebase emulators:start --only=${dynamicConfig.emulatorServices}`
             : 'echo "No development environment configured"'
         },
         dependsOn: ['build']
@@ -450,11 +637,31 @@ export default async function (tree: Tree, schema: Schema) {
     }
   }, true);
 
-  // Copy Firebase files from init directory to Nx workspace
-  copyDirectoryToTree(tree, initDirResolved, projectRoot);
+  // Copy Firebase files from init directory to Nx workspace (exclude functions if we created an Nx app)
+  const excludeDirs = functionsAppName ? ['functions'] : [];
+  copyDirectoryToTree(tree, initDirResolved, projectRoot, excludeDirs);
+  
+  // Update firebase.json to remove predeploy commands if we have functions
+  if (functionsAppName) {
+    const firebaseJsonPath = joinPathFragments(projectRoot, 'firebase.json');
+    if (tree.exists(firebaseJsonPath)) {
+      const firebaseConfig = JSON.parse(tree.read(firebaseJsonPath, 'utf8') || '{}');
+      if (firebaseConfig.functions && Array.isArray(firebaseConfig.functions)) {
+        firebaseConfig.functions = firebaseConfig.functions.map((func: any) => {
+          const { predeploy, ...rest } = func;
+          return rest;
+        });
+        tree.write(firebaseJsonPath, JSON.stringify(firebaseConfig, null, 2));
+        logger.info('✅ Updated firebase.json to remove predeploy commands for Nx compatibility');
+      }
+    }
+  }
   
   // Fix ESLint configuration conflicts
   fixEslintConfiguration(tree, projectRoot);
+  
+  // Create exports directory for emulator data
+  tree.write(joinPathFragments(projectRoot, 'exports', '.gitkeep'), '# This directory stores emulator data exports\n');
   
   // Generate project-specific README
   generateProjectReadme(tree, projectRoot, baseProjectName, features, firebaseProjectName);
@@ -479,10 +686,18 @@ node_modules/
   
   // Success message with detected features
   console.log(`\n✅ Firebase project ${firebaseProjectName} integrated successfully!`);
+  if (functionsAppName) {
+    console.log(`\n🚀 Created Functions Nx app: ${functionsAppName}`);
+    console.log(`   - Builds to: dist/${functionsAppName}/`);
+    console.log(`   - Auto-copied to Firebase functions directory on build`);
+  }
   console.log(`\n🔥 Detected Firebase features: ${features.join(', ') || 'none'}`);
   console.log(`\n📂 Project created at: ${projectRoot}`);
   console.log(`\n🏷️  Applied tags: ${projectTags.join(', ')}`);
   console.log(`\n📝 Quick start commands:`);
+  if (functionsAppName) {
+    console.log(`   - nx build ${functionsAppName}                # Build Functions app to dist/`);
+  }
   if (dynamicConfig.hasEmulators) {
     console.log(`   - nx dev ${firebaseProjectName}              # Start development environment`);
   }
