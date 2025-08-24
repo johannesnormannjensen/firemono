@@ -19,23 +19,37 @@ npm install --save-dev @firemono/nx-firebase-plugin
 
 ## Usage
 
-### Generate a Firebase Project
+### Workflow
 
-```bash
-nx generate @firemono/nx-firebase-plugin:firebase-project --name my-app --directory projects --tags backend,firebase
-```
+The plugin integrates an existing Firebase project (created with `firebase init`) into your Nx workspace:
 
-This creates:
-- `apps/projects/my-app/firebase/` - Firebase project root
-- Complete Firebase configuration files (firebase.json, firestore.rules, etc.)
-- Nx project configuration with targets for emulators, deployment, and testing
-- Proper project tagging and dependencies
+1. **Create and initialize Firebase project**:
+   ```bash
+   mkdir temp-firebase
+   cd temp-firebase
+   firebase login
+   firebase init
+   # Select features: Functions, Firestore, Hosting, etc.
+   # Choose your Firebase project
+   # Configure according to your needs
+   ```
+
+2. **Integrate into Nx workspace**:
+   ```bash
+   nx generate @firemono/nx-firebase-plugin:firebase-project --name my-app --initDir ./temp-firebase --directory projects
+   ```
+
+This copies your Firebase configuration and creates:
+- `apps/projects/my-app/firebase/` - Firebase project with all your files
+- Nx project configuration with Firebase targets
+- Auto-detected tags based on Firebase features used
+- Proper Nx workspace integration
 
 ### Options
 
-- `--name`: Name of the Firebase project (required)
-- `--directory`: Directory to create the project in (optional)
-- `--tags`: Comma-separated tags to apply to the project (optional)
+- `--name`: Name for the Firebase project in your Nx workspace (required)
+- `--initDir`: Path to directory where you ran `firebase init` (required)
+- `--directory`: Optional directory to nest the project under (optional)
 
 ### Generated Project Structure
 
@@ -44,22 +58,27 @@ apps/
   {directory}/
     {name}/
       firebase/
-        ├── firebase.json          # Firebase configuration
-        ├── firestore.rules        # Firestore security rules
-        ├── firestore.indexes.json # Firestore indexes
-        ├── database.rules.json    # Realtime Database rules
-        ├── storage.rules          # Storage security rules
-        ├── exports/               # Emulator data export/import
-        ├── functions/             # Functions source (placeholder)
-        └── public/                # Hosting files (placeholder)
+        ├── project.json          # Nx project configuration
+        ├── firebase.json         # Your Firebase configuration
+        ├── .firebaserc          # Firebase project settings
+        ├── firestore.rules      # Firestore rules (if you chose Firestore)
+        ├── firestore.indexes.json
+        ├── functions/           # Functions source (if you chose Functions)
+        ├── public/              # Hosting files (if you chose Hosting)
+        └── ...                  # Other files from firebase init
 ```
 
-### Project Tags
+### Auto-Generated Tags
 
-The plugin automatically applies semantic tags:
+The plugin automatically applies semantic tags based on your Firebase setup:
 - `type:firebase` - Identifies Firebase infrastructure projects
 - `scope:{name}` - Groups related projects by domain/feature  
 - `platform:firebase` - Indicates Firebase as deployment platform
+- `feature:functions` - Added if Firebase Functions are detected
+- `feature:firestore` - Added if Firestore is detected  
+- `feature:hosting` - Added if Firebase Hosting is detected
+- `feature:storage` - Added if Firebase Storage is detected
+- `feature:emulators` - Added if emulators are configured
 
 ### Available Targets
 

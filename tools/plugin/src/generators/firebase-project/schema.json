@@ -2,15 +2,20 @@
   "$schema": "http://json-schema.org/schema",
   "cli": "nx",
   "id": "firebase-project",
-  "title": "Generate Firebase Project",
-  "description": "Generate a new Firebase project with emulator support, deployment targets, and proper Nx integration",
+  "title": "Integrate Firebase Project",
+  "description": "Integrate an existing Firebase project (created with firebase init) into your Nx workspace",
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
-      "description": "The name of the Firebase project",
+      "description": "The name for the Firebase project in the Nx workspace",
       "pattern": "^[a-zA-Z][a-zA-Z0-9-]*$",
-      "x-prompt": "What name would you like to use for your Firebase project?"
+      "x-prompt": "What name would you like to use for this project in your Nx workspace?"
+    },
+    "initDir": {
+      "type": "string",
+      "description": "Path to the directory where you ran 'firebase init'",
+      "x-prompt": "What is the path to the directory where you ran 'firebase init'?"
     },
     "directory": {
       "type": "string", 
@@ -21,14 +26,8 @@
         "type": "input"
       },
       "default": ""
-    },
-    "tags": {
-      "type": "string",
-      "description": "Comma-separated tags to apply to the project (in addition to automatic tags: type:firebase, scope:{name}, platform:firebase)",
-      "examples": ["backend,api", "e2e,testing", "feature,auth"],
-      "default": ""
     }
   },
-  "required": ["name"],
+  "required": ["name", "initDir"],
   "additionalProperties": false
 }

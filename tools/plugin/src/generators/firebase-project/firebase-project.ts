@@ -1,47 +1,97 @@
-import { Tree, addProjectConfiguration, generateFiles, names, joinPathFragments, formatFiles } from '@nx/devkit';
-import { join } from 'path';
+import { Tree, addProjectConfiguration, names, joinPathFragments, formatFiles, readJson, logger } from '@nx/devkit';
+import { existsSync, readdirSync, statSync } from 'fs';
+import { join, resolve } from 'path';
 
 import { GeneratorOptions } from './schema';
 
 type Schema = GeneratorOptions;
 
+function copyDirectoryToTree(tree: Tree, sourceDir: string, targetDir: string) {
+  if (!existsSync(sourceDir)) {
+    return;
+  }
+  
+  const items = readdirSync(sourceDir);
+  
+  for (const item of items) {
+    const sourcePath = join(sourceDir, item);
+    const targetPath = joinPathFragments(targetDir, item);
+    
+    if (statSync(sourcePath).isDirectory()) {
+      copyDirectoryToTree(tree, sourcePath, targetPath);
+    } else {
+      const content = require('fs').readFileSync(sourcePath, 'utf8');
+      tree.write(targetPath, content);
+    }
+  }
+}
+
+function detectFirebaseFeatures(initDir: string): string[] {
+  const features: string[] = [];
+  const firebaseJsonPath = join(initDir, 'firebase.json');
+  
+  if (!existsSync(firebaseJsonPath)) {
+    return features;
+  }
+  
+  try {
+    const firebaseConfig = JSON.parse(require('fs').readFileSync(firebaseJsonPath, 'utf8'));
+    
+    if (firebaseConfig.functions) features.push('functions');
+    if (firebaseConfig.firestore) features.push('firestore');
+    if (firebaseConfig.database) features.push('database');
+    if (firebaseConfig.hosting) features.push('hosting');
+    if (firebaseConfig.storage) features.push('storage');
+    if (firebaseConfig.emulators) features.push('emulators');
+    
+    return features;
+  } catch (error) {
+    logger.warn(`Could not parse firebase.json: ${error}`);
+    return features;
+  }
+}
+
 export default async function (tree: Tree, schema: Schema) {
   const nameParts = names(schema.name);
   const projectDir = schema.directory ? `${names(schema.directory).fileName}/${nameParts.fileName}` : nameParts.fileName;
+  const initDirResolved = resolve(schema.initDir);
   
-  // Improved naming strategy - consistent with Nx conventions
+  // Validate that the init directory exists and has firebase.json
+  if (!existsSync(initDirResolved)) {
+    throw new Error(`Init directory does not exist: ${initDirResolved}`);
+  }
+  
+  if (!existsSync(join(initDirResolved, 'firebase.json'))) {
+    throw new Error(`No firebase.json found in ${initDirResolved}. Did you run 'firebase init' there?`);
+  }
+  
+  // Project naming strategy  
   const baseProjectName = projectDir.replace(/\//g, '-');
   const firebaseProjectName = `${baseProjectName}-firebase`;
-  const functionsProjectName = `${baseProjectName}-functions`;
-  const angularProjectName = `${baseProjectName}-angular`;
   
   const projectRoot = joinPathFragments('apps', projectDir, 'firebase');
-  const parsedTags = schema.tags ? schema.tags.split(',').map(s => s.trim()) : [];
   
-  // Enhanced tagging strategy following Nx best practices
+  // Detect Firebase features from the init directory
+  const features = detectFirebaseFeatures(initDirResolved);
+  
+  // Auto-generate tags based on detected features
   const projectTags = [
-    ...parsedTags,
     `type:firebase`,                    // Marks this as Firebase infrastructure project
     `scope:${baseProjectName}`,        // Groups related projects by feature/domain
-    `platform:firebase`                // Indicates deployment platform
+    `platform:firebase`,               // Indicates deployment platform
+    ...features.map(f => `feature:${f}`) // Tag each Firebase feature
   ];
 
-  // Add Firebase project configuration based on demo-firebase pattern
+  // Add Firebase project configuration
   addProjectConfiguration(tree, firebaseProjectName, {
     root: projectRoot,
     projectType: 'application',
     tags: projectTags,
-    implicitDependencies: [functionsProjectName],
+    // Note: implicitDependencies should be added manually based on your specific setup
     targets: {
       build: {
         executor: 'nx:run-commands',
         options: { command: 'echo Build succeeded.' }
-      },
-      watch: {
-        executor: 'nx:run-commands',
-        options: { 
-          command: `nx watch --projects=${firebaseProjectName},${functionsProjectName} -- nx build ${firebaseProjectName}` 
-        }
       },
       lint: {
         executor: '@nx/eslint:lint'
@@ -50,12 +100,6 @@ export default async function (tree: Tree, schema: Schema) {
         executor: 'nx:run-commands',
         options: { 
           command: `nx run-many --target=test --projects=tag:scope:${baseProjectName}` 
-        }
-      },
-      'test-watch': {
-        executor: 'nx:run-commands',
-        options: { 
-          command: `nx watch --projects=tag:scope:${baseProjectName} -- nx run-many --target=test --projects=tag:scope:${baseProjectName}` 
         }
       },
       firebase: {
@@ -118,27 +162,41 @@ export default async function (tree: Tree, schema: Schema) {
         executor: 'nx:run-commands',
         options: { 
           cwd: projectRoot,
-          command: `firebase deploy --only functions:${functionsProjectName}` 
+          command: 'firebase deploy --only functions' 
         },
         dependsOn: ['build']
       }
     }
   }, true);
 
-  // Generate files from templates
-  const templateOptions = {
-    ...nameParts,
-    projectName: nameParts.fileName,
-    baseProjectName,
-    firebaseProjectName,
-    functionsProjectName, 
-    angularProjectName,
-    projectDir,
-    tags: parsedTags,
-    tmpl: '',
-  };
+  // Copy Firebase files from init directory to Nx workspace
+  copyDirectoryToTree(tree, initDirResolved, projectRoot);
   
-  generateFiles(tree, join(__dirname, 'files'), projectRoot, templateOptions);
+  // Add/update .gitignore with Nx-specific ignores
+  const gitignorePath = joinPathFragments(projectRoot, '.gitignore');
+  const existingGitignore = tree.exists(gitignorePath) ? tree.read(gitignorePath, 'utf8') : '';
+  const nxIgnores = `
+# Nx
+.nx/
+dist/
+
+# Node modules (if not already ignored)
+node_modules/
+`;
+  
+  if (!existingGitignore.includes('.nx/')) {
+    tree.write(gitignorePath, existingGitignore + nxIgnores);
+  }
 
   await formatFiles(tree);
+  
+  // Success message with detected features
+  console.log(`\n✅ Firebase project ${firebaseProjectName} integrated successfully!`);
+  console.log(`\n🔥 Detected Firebase features: ${features.join(', ') || 'none'}`);
+  console.log(`\n📂 Project created at: ${projectRoot}`);
+  console.log(`\n🏷️  Applied tags: ${projectTags.join(', ')}`);
+  console.log(`\n📝 Available Nx targets:`);
+  console.log(`   - nx firebase ${firebaseProjectName} --help`);
+  console.log(`   - nx emulators:start ${firebaseProjectName}`);
+  console.log(`   - nx deploy ${firebaseProjectName}`);
 }

@@ -21,7 +21,8 @@ describe('Firebase Generator', () => {
   
     expect(projectJson.projectType).toBe('application');
     expect(projectJson.tags).toEqual(['feature', 'test', 'type:firebase', 'scope:apps-my-app', 'platform:firebase']);
-    expect(projectJson.implicitDependencies).toEqual(['apps-my-app-functions']);
+    expect(projectJson.targets.firebase).toBeDefined();
+    expect(projectJson.targets['emulators:start']).toBeDefined();
   });
 
   it.skip('should handle projects without directory and tags', async () => {
