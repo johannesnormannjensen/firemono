@@ -63,9 +63,7 @@ jobs:
       # Automatic release based on conventional commits
       - name: Release
         if: steps.changes.outputs.skip == 'false' && github.event_name == 'push' && !inputs.dry-run
-        run: |
-          npx nx release --yes
-          npx nx affected -t publish
+        run: npx nx release --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,6 +71,4 @@ jobs:
       # Dry run (manual trigger or to see what would be released)
       - name: Release Dry Run
         if: inputs.dry-run || (github.event_name == 'workflow_dispatch' && !inputs.dry-run)
-        run: |
-          npx nx release --dry-run
-          npx nx affected -t publish --dry-run || true
+        run: npx nx release --dry-run

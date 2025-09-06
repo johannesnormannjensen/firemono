@@ -104,4 +104,3 @@ nx generate workspace-generator firebase-project --name <project-name> [--direct
 This will create `apps/<directory>/<project-name>/firebase` (or `apps/<project-name>/firebase` by default) containing `firebase.json`, security rules, emulator settings, and an Nx project configuration with typical targets (`build`, `serve`, `emulate`, `deploy`, etc.).
 
 Feel free to fork, clone, or contribute to this repo!
-
