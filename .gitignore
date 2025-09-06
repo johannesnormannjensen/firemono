@@ -59,5 +59,9 @@ ui-debug.log
 
 # Firebase Public folder
 apps/firebase/public
+
+# Firebase config with real API keys (use dummy config in CI)
+**/firebase-config.ts
+
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md

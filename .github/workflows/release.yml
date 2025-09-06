@@ -42,6 +42,10 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+      # Set up dummy Firebase config for CI builds
+      - name: Set up Firebase config for CI
+        run: cp apps/demo/angular/src/firebase/firebase-config.dummy.ts apps/demo/angular/src/firebase/firebase-config.ts
+
       # Run tests and build before release
       - name: Run tests and build
         run: npx nx affected -t lint test build
