@@ -1,3 +1,13 @@
+## 1.2.1 (2025-09-06)
+
+### 🩹 Fixes
+
+- remove currentVersionResolver from generatorOptions in nx.json ([a036614](https://github.com/johannesnormannjensen/firemono/commit/a036614))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.0 (2025-09-06)
 
 ### 🚀 Features
