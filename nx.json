@@ -98,5 +98,26 @@
     "@nx/angular:component": {
       "style": "css"
     }
+  },
+  "release": {
+    "projects": ["firemono-nx"],
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": {
+        "createRelease": "github"
+      }
+    },
+    "version": {
+      "conventionalCommits": true,
+      "generatorOptions": {
+        "packageRoot": "dist/tools/nx",
+        "currentVersionResolver": "git-tag",
+        "fallbackCurrentVersionResolver": "disk"
+      }
+    },
+    "git": {
+      "commit": true,
+      "tag": true
+    }
   }
 }

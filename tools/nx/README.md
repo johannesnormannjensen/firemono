@@ -184,11 +184,11 @@ nx run-many --target=build --projects=tag:scope:my-app
 
 ## 🤝 Contributing
 
-Contributions welcome! Please read the [contributing guide](https://github.com/johannesfiremono/nx-firebase-monorepo-example/blob/main/CONTRIBUTING.md).
+Contributions welcome! Please read the [contributing guide](https://github.com/johannesnormannjensen/firemono/blob/main/CONTRIBUTING.md).
 
 ## 📄 License
 
-MIT © [Johannes Firemono](https://github.com/johannesfiremono)
+MIT © [Johannes Firemono](https://github.com/johannesnormannjensen/firemono)
 
 ---
 
