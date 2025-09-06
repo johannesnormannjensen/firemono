@@ -1,3 +1,13 @@
+## 1.2.3 (2025-09-06)
+
+### 🩹 Fixes
+
+- update package version and repository URLs in package.json ([c550392](https://github.com/johannesnormannjensen/firemono/commit/c550392))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.2 (2025-09-06)
 
 ### 🩹 Fixes
