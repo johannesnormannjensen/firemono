@@ -1,3 +1,13 @@
+## 1.2.2 (2025-09-06)
+
+### 🩹 Fixes
+
+- update CI workflow to use pull_request trigger and add concurrency settings ([51ba82d](https://github.com/johannesnormannjensen/firemono/commit/51ba82d))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.1 (2025-09-06)
 
 ### 🩹 Fixes
