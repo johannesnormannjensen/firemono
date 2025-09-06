@@ -34,7 +34,7 @@ tools/
 ### Setup
 
 ```bash
-git clone https://github.com/johannesfiremono/nx-firebase-monorepo-example.git
+git clone https://github.com/johannesnormannjensen/nx-firebase-monorepo-example
 cd nx-firebase-monorepo-example
 npm install
 ```
