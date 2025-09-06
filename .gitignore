@@ -59,3 +59,5 @@ ui-debug.log
 
 # Firebase Public folder
 apps/firebase/public
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

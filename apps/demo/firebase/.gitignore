@@ -77,3 +77,5 @@ node_modules/
 
 # Emulator data (comment out if you want to commit emulator data)
 emulator-data/
+
+public/

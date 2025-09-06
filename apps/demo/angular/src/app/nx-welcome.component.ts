@@ -1,4 +1,4 @@
-import { CommonModule, JsonPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { EnvironmentService } from '@firemono/demo/angular/environment';
 import { Firestore, collectionData, collection, DocumentData, FirestoreDataConverter, QueryDocumentSnapshot, SnapshotOptions } from '@angular/fire/firestore';
@@ -14,7 +14,7 @@ const converter: FirestoreDataConverter<User> = {
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions
   ): User {
-    const data = snapshot.data(options)!;
+    const data = snapshot.data(options);
     return {
       id: snapshot.id,
       name: data['name'],
