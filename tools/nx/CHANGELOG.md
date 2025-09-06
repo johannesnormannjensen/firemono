@@ -1,3 +1,15 @@
+## 1.2.4 (2025-09-06)
+
+### 🩹 Fixes
+
+- use npx to build plugin for release in CI workflow ([11ffc2a](https://github.com/johannesnormannjensen/firemono/commit/11ffc2a))
+- add missing step to build plugin for release in CI workflow ([0784d58](https://github.com/johannesnormannjensen/firemono/commit/0784d58))
+- streamline release commands in GitHub Actions workflow ([dacea3d](https://github.com/johannesnormannjensen/firemono/commit/dacea3d))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.3 (2025-09-06)
 
 ### 🩹 Fixes
