@@ -52,7 +52,7 @@ jobs:
 
       # Build the plugin for release
       - name: Build plugin for release
-        run: nx build firemono-nx
+        run: npx nx build firemono-nx
 
       # Check if there are any changes that warrant a release
       - name: Check for releasable changes
