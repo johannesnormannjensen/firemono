@@ -1,17 +1,17 @@
 {
   "name": "@firemono/nx",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Nx plugin for Firebase development with proper architecture - Functions as Nx apps building to dist, live reloading, and auto-persisted emulator data",
   "author": "Johannes Firemono",
   "license": "MIT",
-  "homepage": "https://github.com/johannesfiremono/nx-firebase-monorepo-example#readme",
+  "homepage": "https://github.com/johannesnormannjensen/firemono#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/johannesfiremono/nx-firebase-monorepo-example.git",
+    "url": "https://github.com/johannesnormannjensen/firemono.git",
     "directory": "tools/nx"
   },
   "bugs": {
-    "url": "https://github.com/johannesfiremono/nx-firebase-monorepo-example/issues"
+    "url": "https://github.com/johannesnormannjensen/firemono/issues"
   },
   "keywords": [
     "nx",
