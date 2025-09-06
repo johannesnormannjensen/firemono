@@ -111,7 +111,6 @@
       "conventionalCommits": true,
       "generatorOptions": {
         "packageRoot": "dist/tools/nx",
-        "currentVersionResolver": "git-tag",
         "fallbackCurrentVersionResolver": "disk"
       }
     },
