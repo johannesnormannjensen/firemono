@@ -1,3 +1,13 @@
+## 1.2.6 (2025-09-08)
+
+### 🩹 Fixes
+
+- update version to 1.2.1 in package.json ([415e0fe](https://github.com/johannesnormannjensen/firemono/commit/415e0fe))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.5 (2025-09-08)
 
 ### 🩹 Fixes
