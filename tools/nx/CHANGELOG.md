@@ -1,3 +1,13 @@
+## 1.2.5 (2025-09-08)
+
+### 🩹 Fixes
+
+- remove unused type alias and update export in init.ts ([c850dae](https://github.com/johannesnormannjensen/firemono/commit/c850dae))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.4 (2025-09-06)
 
 ### 🩹 Fixes
