@@ -4,8 +4,6 @@ import { join, resolve } from 'path';
 
 import { GeneratorOptions } from './schema';
 
-type Schema = GeneratorOptions;
-
 function copyDirectoryToTree(tree: Tree, sourceDir: string, targetDir: string, excludeDirs: string[] = []) {
   if (!existsSync(sourceDir)) {
     return;
@@ -437,7 +435,7 @@ function fixEslintConfiguration(tree: Tree, projectRoot: string) {
   }
 }
 
-export default async function (tree: Tree, schema: Schema) {
+export default async function (tree: Tree, schema: GeneratorOptions) {
   const nameParts = names(schema.name);
   // Use the full directory path provided (e.g., 'apps/my-app')
   const projectDir = schema.directory || `apps/${nameParts.fileName}`;
