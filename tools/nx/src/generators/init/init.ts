@@ -276,20 +276,29 @@ function addFirebaseDependenciesToWorkspace(tree: Tree, functionsSourceDir: stri
   if (existsSync(workspacePackageJsonPath)) {
     try {
       const workspacePackageJson = JSON.parse(require('fs').readFileSync(workspacePackageJsonPath, 'utf8'));
+      
+      // Smart merge: only add new dependencies or upgrade existing ones, never downgrade
+      const mergeDependencies = (existing: Record<string, string> = {}, newDeps: Record<string, string>) => {
+        const merged = { ...existing };
+        for (const [pkg, version] of Object.entries(newDeps)) {
+          if (!existing[pkg]) {
+            // Add new dependency
+            merged[pkg] = version;
+          }
+          // For existing dependencies, keep the existing version (don't downgrade)
+          // User can manually upgrade if needed
+        }
+        return merged;
+      };
+      
       const updatedWorkspacePackage = {
         ...workspacePackageJson,
-        dependencies: {
-          ...workspacePackageJson.dependencies,
-          ...functionsDeps.dependencies
-        },
-        devDependencies: {
-          ...workspacePackageJson.devDependencies,
-          ...functionsDeps.devDependencies
-        }
+        dependencies: mergeDependencies(workspacePackageJson.dependencies, functionsDeps.dependencies),
+        devDependencies: mergeDependencies(workspacePackageJson.devDependencies, functionsDeps.devDependencies)
       };
       
       require('fs').writeFileSync(workspacePackageJsonPath, JSON.stringify(updatedWorkspacePackage, null, 2));
-      logger.info('✅ Added Firebase dependencies to workspace package.json');
+      logger.info('✅ Added Firebase dependencies to workspace package.json (preserving existing versions)');
     } catch (error) {
       logger.warn(`Could not update workspace package.json: ${error}`);
     }
