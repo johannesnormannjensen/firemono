@@ -349,6 +349,7 @@ function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: s
   
   // Create ESLint config
   const eslintConfig = `import baseConfig from '../../../eslint.config.mjs';
+import jsoncParser from 'jsonc-eslint-parser';
 
 export default [
   ...baseConfig,
@@ -367,7 +368,7 @@ export default [
       ],
     },
     languageOptions: {
-      parser: await import('jsonc-eslint-parser'),
+      parser: jsoncParser,
     },
   },
 ];`;

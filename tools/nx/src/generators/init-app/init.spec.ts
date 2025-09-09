@@ -128,4 +128,74 @@ describe('Firebase Generator', () => {
     }
   });
 
+  it('should create functions app with valid ESLint config when functions are detected', async () => {
+    // Create functions directory structure in temp init dir
+    const functionsDir = join(tempInitDir, 'functions');
+    mkdirSync(functionsDir, { recursive: true });
+    mkdirSync(join(functionsDir, 'src'), { recursive: true });
+    
+    // Add package.json and tsconfig to functions directory
+    writeFileSync(join(functionsDir, 'package.json'), JSON.stringify({
+      name: 'functions',
+      engines: { node: '18' },
+      main: 'lib/index.js',
+      dependencies: {
+        'firebase-admin': '^12.1.0',
+        'firebase-functions': '^5.0.1'
+      }
+    }, null, 2));
+    
+    writeFileSync(join(functionsDir, 'tsconfig.json'), JSON.stringify({
+      compilerOptions: {
+        module: 'commonjs',
+        outDir: 'lib',
+        target: 'es2018'
+      }
+    }, null, 2));
+    
+    // Add sample functions code
+    writeFileSync(join(functionsDir, 'src', 'index.ts'), `
+import { onRequest } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions';
+
+// export const helloWorld = onRequest((request, response) => {
+//   logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
+`);
+
+    await generator(tree, {
+      name: 'test-app',
+      directory: 'apps/test-app',
+      initDirectory: tempInitDir
+    });
+
+    // Verify the functions app was created
+    const functionsAppProjectJson = readJson(tree, 'apps/test-app/functions/project.json');
+    expect(functionsAppProjectJson.name).toBe('test-app-functions');
+    expect(functionsAppProjectJson.targets.build).toBeDefined();
+    expect(functionsAppProjectJson.targets.lint).toBeDefined();
+    expect(functionsAppProjectJson.targets.test).toBeDefined();
+
+    // Verify ESLint config is generated and has valid syntax
+    const eslintConfig = tree.read('apps/test-app/functions/eslint.config.mjs', 'utf8');
+    expect(eslintConfig).toBeDefined();
+    expect(eslintConfig).toContain("import baseConfig from '../../../eslint.config.mjs';");
+    expect(eslintConfig).toContain("import jsoncParser from 'jsonc-eslint-parser';");
+    expect(eslintConfig).toContain("parser: jsoncParser,");
+    
+    // The critical test: ensure there's no 'await import' which caused the syntax error
+    expect(eslintConfig).not.toContain('await import');
+    
+    // Verify functions source was processed correctly
+    const functionsIndex = tree.read('apps/test-app/functions/src/index.ts', 'utf8');
+    expect(functionsIndex).toBeDefined();
+    expect(functionsIndex).toContain('export const helloWorld = onRequest');
+    expect(functionsIndex).not.toContain('// export const helloWorld');
+
+    // Verify firebase.json was updated to point to dist directory
+    const firebaseJson = readJson(tree, 'apps/test-app/firebase/firebase.json');
+    expect(firebaseJson.functions[0].source).toBe('../../../dist/test-app/functions');
+  });
+
 });
