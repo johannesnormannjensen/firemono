@@ -1,9 +1,10 @@
 import { Tree, readJson, readProjectConfiguration } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import generator from './init';
+import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdirSync, writeFileSync, rmSync } from 'fs';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import generator from './init';
 
 describe('Firebase Generator', () => {
   let tree: Tree;
@@ -11,11 +12,11 @@ describe('Firebase Generator', () => {
 
   beforeEach(() => {
     tree = createTreeWithEmptyWorkspace();
-    
+
     // Create a temp directory with mock firebase.json for testing
     tempInitDir = join(tmpdir(), `test-firebase-init-${Date.now()}`);
     mkdirSync(tempInitDir, { recursive: true });
-    
+
     // Create mock firebase.json with various features
     const mockFirebaseConfig = {
       functions: [{ source: 'functions', codebase: 'default' }],
@@ -24,7 +25,7 @@ describe('Firebase Generator', () => {
       storage: { rules: 'storage.rules' },
       emulators: { functions: { port: 5001 }, firestore: { port: 8080 } }
     };
-    
+
     writeFileSync(join(tempInitDir, 'firebase.json'), JSON.stringify(mockFirebaseConfig, null, 2));
     writeFileSync(join(tempInitDir, '.firebaserc'), JSON.stringify({ projects: { default: 'test-project' } }));
     writeFileSync(join(tempInitDir, 'firestore.rules'), 'rules_version = "2";\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if false;\n    }\n  }\n}');
@@ -43,15 +44,15 @@ describe('Firebase Generator', () => {
       directory: 'apps/my-app',
       initDirectory: tempInitDir
     });
-  
+
     const projectJson = readJson(tree, 'apps/my-app/firebase/project.json');
-  
+
     expect(projectJson.projectType).toBe('application');
     expect(projectJson.name).toBe('my-app-firebase');
     expect(projectJson.tags).toEqual([
-      'type:firebase', 
-      'scope:my-app', 
-      'platform:firebase', 
+      'type:firebase',
+      'scope:my-app',
+      'platform:firebase',
       'feature:functions',
       'feature:firestore',
       'feature:hosting',
@@ -61,12 +62,12 @@ describe('Firebase Generator', () => {
     expect(projectJson.targets.firebase).toBeDefined();
     expect(projectJson.targets['emulators:start']).toBeDefined();
     expect(projectJson.targets.deploy).toBeDefined();
-    
+
     // Check that Firebase files were copied
     expect(tree.exists('apps/my-app/firebase/firebase.json')).toBe(true);
     expect(tree.exists('apps/my-app/firebase/.firebaserc')).toBe(true);
     expect(tree.exists('apps/my-app/firebase/firestore.rules')).toBe(true);
-    
+
     // Verify firebase.json content was copied correctly
     const copiedFirebaseJson = readJson(tree, 'apps/my-app/firebase/firebase.json');
     expect(copiedFirebaseJson.functions).toBeDefined();
@@ -87,7 +88,7 @@ describe('Firebase Generator', () => {
     expect(config.tags).toContain('type:firebase');
     expect(config.tags).toContain('scope:standalone-app');
     expect(config.tags).toContain('platform:firebase');
-    
+
     // Should still detect features from firebase.json
     expect(config.tags).toContain('feature:functions');
     expect(config.tags).toContain('feature:firestore');
@@ -117,7 +118,7 @@ describe('Firebase Generator', () => {
   it('should throw error if initDirectory has no firebase.json', async () => {
     const emptyDir = join(tmpdir(), `empty-dir-${Date.now()}`);
     mkdirSync(emptyDir, { recursive: true });
-    
+
     try {
       await expect(generator(tree, {
         name: 'test-app',
@@ -133,7 +134,7 @@ describe('Firebase Generator', () => {
     const functionsDir = join(tempInitDir, 'functions');
     mkdirSync(functionsDir, { recursive: true });
     mkdirSync(join(functionsDir, 'src'), { recursive: true });
-    
+
     // Add package.json and tsconfig to functions directory
     writeFileSync(join(functionsDir, 'package.json'), JSON.stringify({
       name: 'functions',
@@ -144,7 +145,7 @@ describe('Firebase Generator', () => {
         'firebase-functions': '^5.0.1'
       }
     }, null, 2));
-    
+
     writeFileSync(join(functionsDir, 'tsconfig.json'), JSON.stringify({
       compilerOptions: {
         module: 'commonjs',
@@ -152,7 +153,7 @@ describe('Firebase Generator', () => {
         target: 'es2018'
       }
     }, null, 2));
-    
+
     // Add sample functions code
     writeFileSync(join(functionsDir, 'src', 'index.ts'), `
 import { onRequest } from 'firebase-functions/v2/https';
@@ -183,10 +184,10 @@ import { logger } from 'firebase-functions';
     expect(eslintConfig).toContain("import baseConfig from '../../../eslint.config.mjs';");
     expect(eslintConfig).toContain("import jsoncParser from 'jsonc-eslint-parser';");
     expect(eslintConfig).toContain("parser: jsoncParser,");
-    
+
     // The critical test: ensure there's no 'await import' which caused the syntax error
     expect(eslintConfig).not.toContain('await import');
-    
+
     // Verify functions source was processed correctly
     const functionsIndex = tree.read('apps/test-app/functions/src/index.ts', 'utf8');
     expect(functionsIndex).toBeDefined();

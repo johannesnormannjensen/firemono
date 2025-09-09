@@ -1,6 +1,6 @@
 {
   "name": "@firemono/nx",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Nx plugin for Firebase development with proper architecture - Functions as Nx apps building to dist, live reloading, and auto-persisted emulator data",
   "author": "Johannes Firemono",
   "license": "MIT",
@@ -31,14 +31,9 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
-  "peerDependencies": {
-    "@nx/devkit": ">=20.0.0"
-  },
   "dependencies": {
+    "@nx/devkit": "20.8.0",
     "tslib": "^2.3.0"
   },
-  "generators": "./generators.json",
-  "nx": {
-    "name": "firemono"
-  }
+  "generators": "./generators.json"
 }

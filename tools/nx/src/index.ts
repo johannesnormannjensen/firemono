@@ -1,1 +1,0 @@
-export * from './generators/init-app/init';
