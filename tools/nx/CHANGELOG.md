@@ -1,3 +1,13 @@
+## 1.4.0 (2025-09-09)
+
+### 🚀 Features
+
+- update Firebase project generator to add dependencies to workspace package.json ([ec832ba](https://github.com/johannesnormannjensen/firemono/commit/ec832ba))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.3.1 (2025-09-09)
 
 ### 🩹 Fixes
