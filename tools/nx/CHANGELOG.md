@@ -1,3 +1,13 @@
+## 1.2.8 (2025-09-09)
+
+### 🩹 Fixes
+
+- update version to 1.2.3 in package.json and refine function type definitions in init.ts ([6c5ea3e](https://github.com/johannesnormannjensen/firemono/commit/6c5ea3e))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.7 (2025-09-09)
 
 ### 🩹 Fixes
