@@ -1,3 +1,13 @@
+## 1.2.7 (2025-09-09)
+
+### 🩹 Fixes
+
+- update ESLint configuration to use jsonc-eslint-parser directly ([46ad1d1](https://github.com/johannesnormannjensen/firemono/commit/46ad1d1))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.6 (2025-09-08)
 
 ### 🩹 Fixes
