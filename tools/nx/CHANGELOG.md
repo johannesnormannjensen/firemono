@@ -1,3 +1,13 @@
+## 1.3.1 (2025-09-09)
+
+### 🩹 Fixes
+
+- increment version to 1.2.9 in package.json and update initDirectory resolution in generator ([c6063e7](https://github.com/johannesnormannjensen/firemono/commit/c6063e7))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.3.0 (2025-09-09)
 
 ### 🚀 Features
