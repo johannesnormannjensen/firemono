@@ -1,3 +1,13 @@
+## 1.5.0 (2025-09-09)
+
+### 🚀 Features
+
+- update version to 1.4.1 and enhance Firebase dependency merging in workspace package.json ([83950d5](https://github.com/johannesnormannjensen/firemono/commit/83950d5))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.4.0 (2025-09-09)
 
 ### 🚀 Features
