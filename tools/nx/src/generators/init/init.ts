@@ -236,6 +236,68 @@ ${features.includes('storage') ? `├── storage.rules         # Storage secu
   tree.write(joinPathFragments(projectRoot, 'README.md'), readmeContent);
 }
 
+function addFirebaseDependenciesToWorkspace(tree: Tree, functionsSourceDir: string): { dependencies: Record<string, string>, devDependencies: Record<string, string> } {
+  const functionsPackageJsonPath = join(functionsSourceDir, 'package.json');
+  let functionsDeps = { dependencies: {}, devDependencies: {} };
+  
+  // Read existing functions dependencies if available
+  if (existsSync(functionsPackageJsonPath)) {
+    try {
+      const functionsPackageJson = JSON.parse(require('fs').readFileSync(functionsPackageJsonPath, 'utf8'));
+      functionsDeps = {
+        dependencies: functionsPackageJson.dependencies || {},
+        devDependencies: functionsPackageJson.devDependencies || {}
+      };
+    } catch (error) {
+      logger.warn(`Could not parse functions package.json: ${error}`);
+    }
+  }
+  
+  // Add default Firebase dependencies if not present
+  const defaultDeps = {
+    'firebase-admin': '^13.2.0',
+    'firebase-functions': '^6.0.1'
+  };
+  
+  const defaultDevDeps = {
+    '@typescript-eslint/eslint-plugin': '^5.12.0',
+    '@typescript-eslint/parser': '^5.12.0',
+    'eslint-config-google': '^0.14.0',
+    'eslint-plugin-import': '^2.25.4',
+    'firebase-functions-test': '^3.1.0'
+  };
+  
+  // Merge with defaults
+  functionsDeps.dependencies = { ...defaultDeps, ...functionsDeps.dependencies };
+  functionsDeps.devDependencies = { ...defaultDevDeps, ...functionsDeps.devDependencies };
+  
+  // Read workspace package.json
+  const workspacePackageJsonPath = join(workspaceRoot, 'package.json');
+  if (existsSync(workspacePackageJsonPath)) {
+    try {
+      const workspacePackageJson = JSON.parse(require('fs').readFileSync(workspacePackageJsonPath, 'utf8'));
+      const updatedWorkspacePackage = {
+        ...workspacePackageJson,
+        dependencies: {
+          ...workspacePackageJson.dependencies,
+          ...functionsDeps.dependencies
+        },
+        devDependencies: {
+          ...workspacePackageJson.devDependencies,
+          ...functionsDeps.devDependencies
+        }
+      };
+      
+      require('fs').writeFileSync(workspacePackageJsonPath, JSON.stringify(updatedWorkspacePackage, null, 2));
+      logger.info('✅ Added Firebase dependencies to workspace package.json');
+    } catch (error) {
+      logger.warn(`Could not update workspace package.json: ${error}`);
+    }
+  }
+  
+  return functionsDeps;
+}
+
 function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: string, initDir: string) {
   const functionsAppName = `${baseProjectName}-functions`;
   const functionsAppRoot = joinPathFragments(projectDir, 'functions');
@@ -245,6 +307,9 @@ function createFunctionsNxApp(tree: Tree, baseProjectName: string, projectDir: s
     logger.warn('⚠️  No functions directory found in init directory');
     return null;
   }
+  
+  // Add Firebase dependencies to workspace package.json
+  addFirebaseDependenciesToWorkspace(tree, functionsSourceDir);
   
   // Create Functions app project.json
   const functionsProjectConfig = {
@@ -400,24 +465,15 @@ export default defineConfig(() => ({
   
   tree.write(joinPathFragments(functionsAppRoot, 'vite.config.ts'), viteConfig);
   
-  // Create package.json for development
+  // Create minimal package.json for functions (dependencies are managed at workspace level)
   const functionsPackageJson = {
-    name: 'functions',
-    engines: { node: '22' },
+    name: functionsAppName,
+    engines: {
+      node: '22'
+    },
     main: 'index.cjs',
-    dependencies: {
-      'firebase-admin': '^13.2.0',
-      'firebase-functions': '^6.0.1'
-    },
-    devDependencies: {
-      '@typescript-eslint/eslint-plugin': '^5.12.0',
-      '@typescript-eslint/parser': '^5.12.0',
-      eslint: '^8.9.0',
-      'eslint-config-google': '^0.14.0',
-      'eslint-plugin-import': '^2.25.4',
-      'firebase-functions-test': '^3.1.0',
-      typescript: '^4.9.0'
-    },
+    dependencies: {},
+    devDependencies: {},
     private: true
   };
   
@@ -700,6 +756,7 @@ emulator-data/
     console.log(`   - Builds to: dist/${baseProjectName}/functions/`);
     console.log(`   - Firebase uses dist directory directly (no copying needed!)`);
     console.log(`   - Watch mode available for live development`);
+    console.log(`   - Dependencies added to workspace package.json`);
   }
   console.log(`\n🔥 Detected Firebase features: ${features.join(', ') || 'none'}`);
   console.log(`\n📂 Project created at: ${projectRoot}`);
@@ -717,4 +774,7 @@ emulator-data/
     console.log(`   - nx logs ${firebaseProjectName}             # View function logs`);
   }
   console.log(`\n📖 See ${projectRoot}/README.md for detailed usage instructions`);
+  if (functionsAppName) {
+    console.log(`\n💡 Don't forget to run 'npm install' to install the Firebase dependencies`);
+  }
 }
