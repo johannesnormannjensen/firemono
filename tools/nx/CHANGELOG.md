@@ -1,3 +1,13 @@
+## 1.2.9 (2025-09-09)
+
+### 🩹 Fixes
+
+- update version to 1.2.4 in package.json and remove unused asset configurations in project.json ([3b39ca7](https://github.com/johannesnormannjensen/firemono/commit/3b39ca7))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.8 (2025-09-09)
 
 ### 🩹 Fixes
