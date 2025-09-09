@@ -1,6 +1,6 @@
 {
   "name": "@firemono/nx",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Nx plugin for Firebase development with proper architecture - Functions as Nx apps building to dist, live reloading, and auto-persisted emulator data",
   "author": "Johannes Firemono",
   "license": "MIT",

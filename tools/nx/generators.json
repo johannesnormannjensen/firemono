@@ -1,7 +1,7 @@
 {
   "generators": {
     "init-app": {
-      "factory": "./src/generators/init-app/init",
+      "factory": "./src/generators/init-app/init.js",
       "schema": "./src/generators/init-app/schema.json",
       "description": "Initialize a Firebase project in your Nx workspace from an existing firebase init directory"
     }

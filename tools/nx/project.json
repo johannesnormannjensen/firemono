@@ -14,16 +14,10 @@
         "tsConfig": "tools/nx/tsconfig.lib.json",
         "assets": [
           "tools/nx/*.md",
-          {
-            "input": "./tools/nx",
-            "glob": "generators.json",
-            "output": "."
-          },
-          {
-            "input": "./tools/nx",
-            "glob": "package.json",
-            "output": "."
-          }
+          "tools/nx/generators.json",
+          "tools/nx/package.json",
+          "tools/nx/.npmignore",
+          "tools/nx/src/generators/init-app/schema.json"
         ]
       }
     },

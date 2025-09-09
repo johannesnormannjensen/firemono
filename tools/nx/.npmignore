@@ -1,0 +1,9 @@
+# Exclude TypeScript source files - only publish compiled JavaScript
+**/*.ts
+!**/*.d.ts
+
+# Exclude development files
+tsconfig*.json
+vite.config.ts
+eslint.config.mjs
+project.json
