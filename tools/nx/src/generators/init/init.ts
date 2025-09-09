@@ -1,6 +1,6 @@
-import { Tree, addProjectConfiguration, names, joinPathFragments, formatFiles, logger } from '@nx/devkit';
+import { Tree, addProjectConfiguration, names, joinPathFragments, formatFiles, logger, workspaceRoot } from '@nx/devkit';
 import { existsSync, readdirSync, statSync } from 'fs';
-import { join, resolve } from 'path';
+import { join } from 'path';
 
 import { GeneratorOptions } from './schema';
 
@@ -440,7 +440,10 @@ export default async function (tree: Tree, schema: GeneratorOptions) {
   const nameParts = names(schema.name);
   // Use the full directory path provided (e.g., 'apps/my-app')
   const projectDir = schema.directory || `apps/${nameParts.fileName}`;
-  const initDirResolved = resolve(schema.initDirectory);
+  // Resolve initDirectory relative to workspace root, not generator location
+  const initDirResolved = schema.initDirectory.startsWith('/') 
+    ? schema.initDirectory 
+    : join(workspaceRoot, schema.initDirectory);
   
   // Enhanced validation
   if (!existsSync(initDirResolved)) {
