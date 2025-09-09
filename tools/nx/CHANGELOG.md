@@ -1,3 +1,14 @@
+## 1.2.10 (2025-09-09)
+
+### 🩹 Fixes
+
+- update factory path in generators.json and increment version to 1.2.6 in package.json ([5cfa725](https://github.com/johannesnormannjensen/firemono/commit/5cfa725))
+- update factory path in generators.json and refine asset configurations in project.json; add .npmignore file ([695d30d](https://github.com/johannesnormannjensen/firemono/commit/695d30d))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.9 (2025-09-09)
 
 ### 🩹 Fixes
