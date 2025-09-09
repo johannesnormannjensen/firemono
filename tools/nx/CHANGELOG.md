@@ -1,3 +1,18 @@
+## 1.3.0 (2025-09-09)
+
+### 🚀 Features
+
+- implement Firebase project generator with dynamic configuration and schema validation ([05c6c87](https://github.com/johannesnormannjensen/firemono/commit/05c6c87))
+
+### 🩹 Fixes
+
+- increment version to 1.2.8 in package.json ([9181d87](https://github.com/johannesnormannjensen/firemono/commit/9181d87))
+- update generator command from init-app to init in README.md ([82992ff](https://github.com/johannesnormannjensen/firemono/commit/82992ff))
+
+### ❤️ Thank You
+
+- Johannes Normann Jensen
+
 ## 1.2.10 (2025-09-09)
 
 ### 🩹 Fixes
