@@ -42,7 +42,7 @@ cd ..
 ### 2. Generate Nx Firebase Project
 
 ```bash
-nx generate @firemono/nx:init-app --name my-app --directory apps/my-app --initDirectory ./my-firebase-init
+nx generate @firemono/nx:init --name my-app --directory apps/my-app --initDirectory ./my-firebase-init
 ```
 
 This creates:
@@ -91,7 +91,7 @@ apps/
 ## 📋 Generator Options
 
 ```bash
-nx generate @firemono/nx:init-app [options]
+nx generate @firemono/nx:init [options]
 ```
 
 | Option | Description | Required |
@@ -103,7 +103,7 @@ nx generate @firemono/nx:init-app [options]
 ### Example
 
 ```bash
-nx generate @firemono/nx:init-app \
+nx generate @firemono/nx:init \
   --name ecommerce \
   --directory apps/ecommerce \
   --initDirectory ./firebase-init-ecommerce
