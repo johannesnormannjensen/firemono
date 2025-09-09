@@ -393,7 +393,7 @@ export default defineConfig(() => ({
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../../coverage/${functionsAppRoot}',
-      provider: 'v8' as const,
+      provider: 'v8',
     },
   },
 }));`;
@@ -646,7 +646,8 @@ export default async function (tree: Tree, schema: GeneratorOptions) {
     if (tree.exists(firebaseJsonPath)) {
       const firebaseConfig = JSON.parse(tree.read(firebaseJsonPath, 'utf8') || '{}');
       if (firebaseConfig.functions && Array.isArray(firebaseConfig.functions)) {
-        firebaseConfig.functions = firebaseConfig.functions.map((func: any) => {
+        firebaseConfig.functions = firebaseConfig.functions.map((func: { predeploy?: string; source?: string; [key: string]: unknown }) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { predeploy, ...rest } = func;
           return {
             ...rest,
